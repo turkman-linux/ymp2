@@ -27,7 +27,6 @@ typedef int (*callback)(void*);
 typedef struct {
     callback call;      /**< Pointer to the callback function for the operation. */
     char* name;         /**< Name of the operation, used for identification. */
-    void* priv_data;    /**< Pointer to private data associated with the operation. */
 } Operation;
 
 /**
@@ -43,6 +42,9 @@ typedef struct {
     Operation on_error;    /**< Operation that called if error detected */
     size_t length;         /**< Current number of operations in the array. */
     size_t capacity;       /**< Current capacity of the array. */
+/** @cond */
+    void* priv_data;       /* Private data. Do not touch! */
+/** @endcond */
 } OperationManager;
 
 /**

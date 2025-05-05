@@ -21,7 +21,9 @@
  */
 typedef struct {
     OperationManager *manager; /**< Pointer to the main `OperationManager` instance */
-    void* priv_data; /**< Private data. Do not touch! */
+/** @cond */
+    void* priv_data; /* Private data. Do not touch! */
+/** @endcond */
 } Ymp;
 
 

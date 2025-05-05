@@ -1,13 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 
 #include <operations.h>
 
+typedef struct {
+    bool running;
+} OperationManagerPriv;
+
 visible OperationManager* operation_manager_new() {
     // Allocate memory for the OperationManager instance
     OperationManager *manager = (OperationManager *)malloc(sizeof(OperationManager));
+    manager->priv_data = (void*)malloc(sizeof(OperationManagerPriv));
     if (manager == NULL) {
         return NULL; // Memory allocation failed
     }
@@ -16,6 +22,10 @@ visible OperationManager* operation_manager_new() {
     manager->operations = NULL; // Initially set to NULL
     manager->length = 0;        // Length is set to zero
     manager->capacity = 0;      // Capacity is set to zero
+
+    // Private area
+    OperationManagerPriv* priv = (OperationManagerPriv*)manager->priv_data;
+    priv->running = false;
 
     return manager; // Return the pointer to the newly created instance
 }
@@ -46,9 +56,12 @@ void visible operation_register(OperationManager *manager, Operation new_op) {
 
 int visible operation_main(OperationManager *manager, const char* name, void* args){
     int status = 0;
+    OperationManagerPriv* priv = (OperationManagerPriv*)manager->priv_data;
     for (size_t i = 0; i < manager->length; i++) {
         if (strcmp(manager->operations[i].name, name) == 0) {
+            priv->running = true;
             status = manager->operations[i].call(args);
+            priv->running = false;
             if(status > 0){
                 if (manager->on_error.call){
                     manager->on_error.call(NULL);
