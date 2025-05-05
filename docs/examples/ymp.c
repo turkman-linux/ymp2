@@ -10,5 +10,8 @@ int main(int argc, char** argv){
         printf("  Operation: %s\n", name); // Print operation name
     }
     int rc = operation_main(ymp->manager, "print", "Hello World\n"); // Run an operation
+    ymp_add(ymp, "print", "Hello\n");
+    ymp_add(ymp, "print", "World\n");
+    rc = ymp_run(ymp);
     return rc;
 }

@@ -21,6 +21,7 @@
  */
 typedef struct {
     OperationManager *manager; /**< Pointer to the main `OperationManager` instance */
+    void* priv_data; /**< Private data. Do not touch! */
 } Ymp;
 
 
@@ -38,3 +39,44 @@ typedef struct {
  */
 Ymp* ymp_init();
 
+/**
+ * @brief Adds a new entry to the Ymp structure.
+ *
+ * This function adds a new entry identified by the given name to the
+ * specified Ymp structure. The additional arguments can be passed
+ * through the `args` parameter, which can be used to provide any
+ * necessary data for the new entry.
+ *
+ * @param ymp Pointer to the Ymp structure where the entry will be added.
+ * @param name The name of the entry to be added. This should be a
+ *             null-terminated string.
+ * @param args Pointer to additional arguments that may be needed for
+ *             the entry. The interpretation of this pointer depends on
+ *             the specific implementation and usage context.
+ *
+ * @return void This function does not return a value.
+ *
+ * @note Ensure that the Ymp structure is properly initialized before
+ *       calling this function. The behavior is undefined if the
+ *       structure is not valid.
+ */
+void ymp_add(Ymp* ymp, const char* name, void* args);
+
+/**
+ * @brief Executes operations on items in the Ymp queue.
+ *
+ * This function iterates through the items in the Ymp queue and performs
+ * the main operation for each item. If an operation returns a positive
+ * value, the iteration is halted, and the return code of the operation
+ * is returned.
+ *
+ * @param ymp A pointer to a Ymp structure that contains the queue and
+ *            associated data.
+ * @return int Returns the return code of the operation. A positive
+ *             value indicates that the operation was successful and
+ *             the iteration was stopped. A value of 0 or negative
+ *             indicates that all operations were executed without
+ *             early termination.
+ */
+
+int ymp_run(Ymp* ymp);

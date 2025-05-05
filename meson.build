@@ -25,8 +25,6 @@ foreach ops : run_command('find', 'src/operations','-type','f',check:true).stdou
 endforeach
 ctx_c += '}'
 
-warning(ctx_c)
-
 
 configure_file(
   input: 'src/ctx.c.in',
