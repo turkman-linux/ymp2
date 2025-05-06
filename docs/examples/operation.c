@@ -5,7 +5,7 @@
 
 
 int my_print(void* args){
-    printf((char*)args);
+    printf("%s\n", (char*)args);
     return 0;
 }
 

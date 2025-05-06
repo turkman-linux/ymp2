@@ -12,7 +12,6 @@ foreach src : run_command('find', 'src', '-type', 'f', '-iname', '*.c',check:tru
 endforeach
 
 # Generate ctx.c file
-run_command('touch', meson.current_build_dir()+'/ctx.c')
 ctx_c = ''
 foreach ops : run_command('find', 'src/operations','-type','f',check:true).stdout().strip().split('\n')
     name = ops.split('/')[-1].split('.')[0]
