@@ -2,6 +2,7 @@ project('ymp', 'c')
 
 add_project_arguments('-I'+meson.current_source_dir()+'/include', language: 'c')
 add_project_arguments('-fvisibility=hidden', '-Dvisible=__attribute__((visibility("default")))',  language: 'c')
+add_project_arguments('-fno-plt', '-nostdlib', '-lc',  language: 'c')
 add_project_arguments('-Wall', '-Wextra', '-Werror',  language: 'c')
 
 srcs = []
@@ -17,7 +18,7 @@ foreach ops : run_command('find', 'src/operations','-type','f',check:true).stdou
     name = ops.split('/')[-1].split('.')[0]
     ctx_c = ctx_c + 'extern void '+name+'_init(OperationManager *manager);\n'
 endforeach
-ctx_c += '\nvisible void ctx_init(OperationManager *manager){\n'
+ctx_c += '\nvoid ctx_init(OperationManager *manager){\n'
 foreach ops : run_command('find', 'src/operations','-type','f',check:true).stdout().strip().split('\n')
     name = ops.split('/')[-1].split('.')[0]
     ctx_c += '  '+name+'_init(manager);\n'
