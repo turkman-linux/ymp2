@@ -32,8 +32,6 @@ typedef struct {
     pthread_cond_t cond;    /**< Condition variable for signaling job completion. */
 } jobs;
 
-#define MAX_JOB 1024*1024 /**< Maximum number of jobs allowed in the job manager. */
-
 /**
  * @brief Release the resources used by the job manager.
  *

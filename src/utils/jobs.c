@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <sys/sysinfo.h>
 
+#include <limits.h>
+
 #include <utils/jobs.h>
 #include <core/variable.h>
 
@@ -61,7 +63,7 @@ visible void jobs_run(jobs* j) {
 
 visible jobs* jobs_new() {
     jobs* j = (jobs*)malloc(sizeof(jobs));
-    j->max = MAX_JOB;
+    j->max = INT_MAX;
     j->current = 0;
     j->finished = 0;
     j->total = 0;
