@@ -32,7 +32,7 @@
  * }
  * @endcode
  */
-typedef int (*callback)(void*);
+typedef int (*callback)(void*, ...);
 
 /**
  * @struct Operation

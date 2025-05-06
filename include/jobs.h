@@ -1,13 +1,13 @@
 #include <pthread.h>
 
-typedef struct _job {
+typedef struct {
     void (*callback)(void*,...);
     void* args;
     void* ctx;
     int id;
 } job;
 
-typedef struct _jobs {
+typedef struct {
     job* jobs;
     int max;
     int current;

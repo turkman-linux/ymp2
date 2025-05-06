@@ -9,6 +9,6 @@ int print(void* args) {
 void print_init(OperationManager* manager){
     Operation op;
     op.name = "print";
-    op.call = print;
+    op.call = (callback)print;
     operation_register(manager, op);
 }
