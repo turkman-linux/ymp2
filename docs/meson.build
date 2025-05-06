@@ -2,7 +2,6 @@
 doxygen = find_program('doxygen', required: false)
 
 if doxygen.found()
-    doxygen_input = meson.current_source_dir()+'/../src'
     doxygen_output = 'docs'
     doxygen_file = meson.current_source_dir()+'/Doxyfile'
 
