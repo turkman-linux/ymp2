@@ -1,8 +1,11 @@
-project('ymp', 'c')
+project(
+  'ymp', 
+  'c',
+  version: '2.0.0'
+)
 
 add_project_arguments('-I'+meson.current_source_dir()+'/include', language: 'c')
 add_project_arguments('-fvisibility=hidden', '-Dvisible=__attribute__((visibility("default")))',  language: 'c')
-add_project_arguments('-fno-plt', '-nostdlib', '-lc',  language: 'c')
 add_project_arguments('-Wall', '-Wextra', '-Werror',  language: 'c')
 
 srcs = []
@@ -40,6 +43,6 @@ srcs += [meson.current_build_dir()+'/ctx.c']
 
 
 # Main library
-libymp = library('ymp', srcs, dependencies: deps)
+libymp = library('ymp', srcs, dependencies: deps, link_args: ['-nostdlib', '-lc'])
 
 subdir('docs')
