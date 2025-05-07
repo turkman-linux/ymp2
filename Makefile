@@ -6,10 +6,11 @@ build:
 	ninja -C build
 
 test:
-	@for example in $(wildcard build/examples/*) ; do \
+	@mkdir build/test ; \
+	for example in $(wildcard build/examples/*) ; do \
 	    if [ -f $$example ] ; then \
 	        echo Testing: $$example ; \
-	        cd build ; ../$$example >/dev/null; cd .. ;\
+	        cd build/test ; ../../$$example >/dev/null; cd ../.. ;\
 	    fi \
 	done ; echo DONE
 
