@@ -1,0 +1,159 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include <utils/string.h>
+
+#define MAX_LINE_LENGTH 1024
+
+visible bool yaml_has_area(const char *data, const char *path) {
+    char line[MAX_LINE_LENGTH];
+    FILE *stream = fmemopen((void *)data, strlen(data), "r");
+    while (fgets(line, sizeof(line), stream)) {
+        if (strncmp(line, path, strlen(path)) == 0 && line[strlen(path)] == ':') {
+            fclose(stream);
+            return true;
+        }
+    }
+    fclose(stream);
+    return false;
+}
+
+visible char *yaml_get_area(const char *data, const char *path) {
+    char line[MAX_LINE_LENGTH];
+    bool in_area = false;
+    char *area_data = malloc(strlen(data) + 1);
+    area_data[0] = '\0';
+
+    FILE *stream = fmemopen((void *)data, strlen(data), "r");
+    while (fgets(line, sizeof(line), stream)) {
+        if (line[0] != ' ' && strstr(line, ":")) {
+            if (in_area) {
+                break; // Exit if we reach a new area
+            }
+            if (strncmp(line, path, strlen(path)) == 0 && line[strlen(path)] == ':') {
+                in_area = true;
+                continue;
+            }
+        }
+        if (in_area) {
+            strcat(area_data, line);
+        }
+    }
+    fclose(stream);
+    // shrink memory
+    char *area = strdup(area_data);
+    free(area_data);
+    return area;
+}
+
+visible char *yaml_get_value(const char *data, const char *name) {
+    char line[MAX_LINE_LENGTH];
+    bool in_value = false;
+    char *value = malloc(MAX_LINE_LENGTH);
+    value[0] = '\0';
+
+    FILE *stream = fmemopen((void *)data, strlen(data), "r");
+    while (fgets(line, sizeof(line), stream)) {
+        if (strncmp(line, name, strlen(name)) == 0 && line[strlen(name)] == ':') {
+            strcpy(value, line + strlen(name) + 1);
+            value[strcspn(value, "\n")] = 0; // Remove newline
+            in_value = true;
+            break;
+        }
+    }
+    fclose(stream);
+    return in_value ? value : NULL;
+}
+
+visible char **yaml_get_array(const char *data, const char *name, int *count) {
+    char line[MAX_LINE_LENGTH];
+    int max = 32;
+    char **array = malloc(max * sizeof(char*));
+    *count = 0;
+
+    char *area_data = yaml_get_area(data, name);
+    if (!area_data) {
+        return NULL;
+    }
+
+    FILE *stream = fmemopen(area_data, strlen(area_data), "r");
+    while (fgets(line, sizeof(line), stream)) {
+        if (line[0] == '-') {
+            if (*count >= max){
+                max += 32;
+                array = realloc(array, max * sizeof(char*));
+            }
+            array[*count] = malloc(strlen(line) + 1);
+            strcpy(array[*count], line + 1); // Skip the '-'
+            array[*count][strcspn(array[*count], "\n")] = 0; // Remove newline
+            (*count)++;
+        }
+    }
+    fclose(stream);
+    free(area_data);
+    return array;
+}
+
+// Function to get the area list
+visible char** yaml_get_area_list(const char* fdata, const char* path, int* area_count) {
+    int max = 32;
+    char** ret = malloc(max * sizeof(char*));
+    for (int i = 0; i < max; i++) {
+        ret[i] = NULL; // Initialize pointers to NULL
+    }
+
+    char area_builder[MAX_LINE_LENGTH] = "";
+    bool e = false;
+    *area_count = 0;
+
+    char* fdata_copy = strdup(fdata); // Create a mutable copy of fdata
+    char* line = strtok(fdata_copy, "\n");
+
+    while (line != NULL) {
+        if (line[0] != ' ' && strstr(line, ":") != NULL) {
+            char* name = strtok(line, ":");
+            // Flush memory to array
+            if (strlen(area_builder) > 0) {
+                // Check if we need to resize the array
+                if (*area_count >= max) {
+                    max += 32; // Increase size by 32
+                    ret = realloc(ret, max * sizeof(char*));
+                    if (ret == NULL) {
+                        fprintf(stderr, "Memory allocation failed\n");
+                        free(fdata_copy);
+                        return NULL; // Handle allocation failure
+                    }
+                }
+                ret[*area_count] = strdup(trim(area_builder));
+                (*area_count)++;
+                memset(area_builder, 0, sizeof(area_builder)); // Reset memory
+            }
+            e = (strcmp(trim(name), path) == 0);
+        } else if (e && strlen(line) > 0) {
+            strcat(area_builder, line);
+            strcat(area_builder, "\n");
+        }
+        line = strtok(NULL, "\n");
+    }
+
+    // Flush memory for last item
+    if (e && strlen(area_builder) > 0) {
+        // Check if we need to resize the array
+        if (*area_count >= max) {
+            max += 32; // Increase size by 32
+            ret = realloc(ret, max * sizeof(char*));
+            if (ret == NULL) {
+                fprintf(stderr, "Memory allocation failed\n");
+                free(fdata_copy);
+                return NULL; // Handle allocation failure
+            }
+        }
+        ret[*area_count] = strdup(trim(area_builder));
+        (*area_count)++;
+    }
+
+    free(fdata_copy); // Free the mutable copy
+    return ret;
+}

@@ -13,6 +13,15 @@
 #include <stddef.h>
 
 /**
+ * @brief Reads the entire content of a file into a string.
+ *
+ * @param path The path to the file to be read.
+ * @return A pointer to the string containing the file content, or NULL if the file could not be opened or read.
+ */
+char* readfile(const char *path);
+
+
+/**
  * @brief Compares two strings for equality.
  *
  * @param str1 The first string to compare.

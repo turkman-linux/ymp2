@@ -9,6 +9,28 @@
 
 #include <utils/string.h>
 
+visible char* readfile(const char *path) {
+    FILE *file = fopen(path, "r");
+    if (!file) {
+        perror("Failed to open file");
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char* data = malloc(length + 1);
+    long read_items = fread(data, 1, length, file);
+    if (read_items != length) {
+        perror("Failed to read the complete file");
+        free(data);
+    }
+    data[length] = '\0';
+    fclose(file);
+    return data;
+}
+
 visible int iseq(char* str1, char* str2){
     return strcmp(str1,str2) == 0;
 }
