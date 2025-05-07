@@ -62,27 +62,6 @@ bool issymlink(const char *filename);
 bool isdir(const char *path);
 
 /**
- * @brief Retrieves the directory name from a given path.
- *
- * This function takes a file path as input and returns the directory portion of the path.
- * If the path is NULL or empty, it returns the current directory ("."). If the path does not
- * contain any directory separators ('/'), it also returns the current directory. If the last
- * character of the path is a directory separator, it returns the parent directory.
- *
- * @param path A pointer to a null-terminated string representing the file path.
- *             This string is modified in place to null-terminate at the last '/' character.
- *
- * @return A pointer to the directory name. The return value is:
- *         - "." if the path is NULL, empty, or does not contain a '/'.
- *         - "/" if the path starts with '/'.
- *         - The modified input path up to the last '/' otherwise.
- *
- * @note The input string is modified by null-terminating it at the last '/' character.
- *       Ensure that the caller does not use the original path after this function call.
- */
-char* dirname(const char* path);
-
-/**
  * @brief Create a directory and any necessary parent directories.
  *
  * @param dir The path of the directory to create.

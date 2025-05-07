@@ -26,6 +26,7 @@ visible Ymp* ymp_init(){
     }
     ymp->manager = operation_manager_new(); // Operation manager.
     ymp->variables = variable_manager_new();
+    ymp->errors = array_new();
     // Fill private space
     YmpPrivate *queue = (YmpPrivate*) malloc(sizeof(YmpPrivate));
     queue->length = 0;

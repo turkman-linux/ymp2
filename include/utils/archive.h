@@ -48,13 +48,6 @@ typedef struct {
 Archive* archive_new();
 
 /**
- * @brief Releases the resources associated with an Archive instance.
- *
- * @param data Pointer to the Archive instance to be freed.
- */
-void archive_unref(Archive *data);
-
-/**
  * @brief Loads an archive from the specified path.
  *
  * @param data Pointer to the Archive instance.
@@ -75,9 +68,9 @@ void archive_set_target(Archive *data, const char* target);
  *
  * @param data Pointer to the Archive instance.
  * @param path Path to check.
- * @return 1 if the path is a valid archive, 0 otherwise.
+ * @return true if the path is a valid archive, false otherwise.
  */
-int archive_is_archive(Archive *data, const char *path);
+bool archive_is_archive(Archive *data, const char *path);
 
 /**
  * @brief Lists the files contained in the archive.
@@ -102,15 +95,6 @@ void archive_add(Archive *data, const char *path);
  * @param data Pointer to the Archive instance.
  */
 void archive_create(Archive *data);
-
-/**
- * @brief Extracts files from the archive.
- *
- * @param data Pointer to the Archive instance.
- * @param path Path of the file to extract. If empty, all files are extracted.
- * @param all If true, extracts all files; otherwise, extracts only the specified file.
- */
-static void archive_extract_fn(Archive *data, const char *path, bool all);
 
 /**
  * @brief Reads a file from the archive.

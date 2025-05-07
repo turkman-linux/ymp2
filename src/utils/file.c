@@ -42,53 +42,6 @@ visible bool isdir(const char *path) {
     return false;
 }
 
-visible char* dirname(const char* path) {
-    // Check if the path is NULL or empty
-    if (path == NULL || *path == '\0') {
-        return strdup(""); // Return an empty string
-    }
-
-    // Find the length of the path
-    size_t path_length = strlen(path);
-    
-    // Create a buffer to hold the directory name
-    char* ret = (char*)malloc(path_length + 1); // Allocate enough space
-    if (ret == NULL) {
-        return NULL; // Handle memory allocation failure
-    }
-    
-    size_t ret_index = 0;
-
-    // Check if the path starts with '/'
-    if (path[0] == '/') {
-        ret[ret_index++] = '/'; // Start with '/' if the path is absolute
-    }
-
-    // Split the path by '/' and build the directory name
-    for (size_t i = 1; i < path_length; i++) {
-        if (path[i] == '/') {
-            // If we encounter a '/', we add it to the result
-            if (ret_index > 0 && ret[ret_index - 1] != '/') {
-                ret[ret_index++] = '/';
-            }
-        } else {
-            // Add the character to the result
-            ret[ret_index++] = path[i];
-        }
-    }
-
-    // Remove the last character if it's a '/'
-    if (ret_index > 1 && ret[ret_index - 1] == '/') {
-        ret_index--;
-    }
-
-    // Null-terminate the string
-    ret[ret_index] = '\0';
-
-    return ret; // Return the newly allocated directory string
-}
-
-
 visible void create_dir(const char *dir) {
     char tmp[PATH_MAX];
     char *p = NULL;

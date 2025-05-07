@@ -6,7 +6,7 @@ project(
 
 add_project_arguments('-I'+meson.current_source_dir()+'/include', '-pthread',  language: 'c')
 add_project_arguments('-fvisibility=hidden', '-Dvisible=__attribute__((visibility("default")))',  language: 'c')
-add_project_arguments('-DPATH_MAX=1024',  language: 'c')
+add_project_arguments('-DPATH_MAX=1024', '-pthread', language: 'c')
 add_project_arguments('-Wall', '-Wextra', '-Werror',  language: 'c')
 
 libarchive = dependency('libarchive', required:true)

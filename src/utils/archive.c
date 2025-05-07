@@ -7,6 +7,8 @@
 #include <archive_entry.h>
 #include <fcntl.h>
 
+#include <libgen.h>
+
 #include <utils/error.h>
 #include <utils/string.h>
 #include <utils/file.h>
@@ -14,18 +16,17 @@
 #include <core/ymp.h>
 
 
-Archive* archive_new(){
+visible Archive* archive_new(){
     Archive *data = calloc(1, sizeof(Archive));
     data->add_list_size = 0;
     data->a = array_new();
+    if(!global) {
+        global = ymp_init();
+    }
     return data;
 }
 
-void archive_unref(Archive *data){
-    free(data);
-}
-
-void archive_load(Archive *data, const char* path) {
+visible void archive_load(Archive *data, const char* path) {
     data->archive_path = strdup(path);
     archive_set_type(data, "zip", "none");
 }
@@ -40,11 +41,11 @@ static void archive_load_archive(Archive *data) {
     }
 }
 
-void archive_set_target(Archive *data, const char* target){
+visible void archive_set_target(Archive *data, const char* target){
     data->target_path = strdup(target);
 }
 
-int archive_is_archive(Archive *data, const char *path) {
+visible bool archive_is_archive(Archive *data, const char *path) {
     data->archive = archive_read_new();
     archive_read_support_filter_all(data->archive);
     archive_read_support_format_all(data->archive);
@@ -54,7 +55,7 @@ int archive_is_archive(Archive *data, const char *path) {
     return result == ARCHIVE_OK;
 }
 
-char** archive_list_files(Archive *data, size_t* len) {
+visible char** archive_list_files(Archive *data, size_t* len) {
     archive_load_archive(data);
     struct archive_entry *entry;
     while (archive_read_next_header(data->archive, &entry) == ARCHIVE_OK) {
@@ -67,11 +68,11 @@ char** archive_list_files(Archive *data, size_t* len) {
     return array_get(data->a, len);
 }
 
-void archive_add(Archive *data, const char *path) {
+visible void archive_add(Archive *data, const char *path) {
     array_add(data->a, path);
 }
 
-void archive_create(Archive *data){
+visible void archive_create(Archive *data){
     size_t len;
     archive_write(data, data->archive_path, array_get(data->a, &len));
 }
@@ -101,7 +102,8 @@ static void archive_extract_fn(Archive *data, const char *path, bool all) {
             create_dir(target_file);
             continue;
         }
-        char* dir = dirname(target_file);
+        char* dir = strdup(target_file);
+        dirname(dir);
         if (!isdir(dir)) {
             create_dir(dir);
         }
@@ -143,7 +145,15 @@ static void archive_extract_fn(Archive *data, const char *path, bool all) {
     archive_read_free(data->archive);
 }
 
-char* archive_readfile(Archive *data, const char *file_path) {
+
+visible void archive_extract_all(Archive *data) {
+    archive_extract_fn(data, "",true);
+}
+visible void archive_extract(Archive *data, const char* path) {
+    archive_extract_fn(data, path, false);
+}
+
+visible char* archive_readfile(Archive *data, const char *file_path) {
     archive_load_archive(data);
     struct archive_entry *entry;
     char *ret = NULL;
@@ -238,6 +248,7 @@ visible void archive_write(Archive *data, const char *outname, char **filename) 
   entry = NULL;
   while (*filename) {
     if(!isexists(*filename)){
+        filename++;
         continue;
     }
     lstat(*filename, &st);
@@ -296,9 +307,3 @@ visible void archive_write(Archive *data, const char *outname, char **filename) 
   archive_write_free(a);
 }
 
-void archive_extract_all(Archive *data) {
-    archive_extract_fn(data, "",true);
-}
-void archive_extract(Archive *data, const char* path) {
-    archive_extract_fn(data, path, false);
-}

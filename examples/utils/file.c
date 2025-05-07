@@ -54,10 +54,5 @@ int main() {
         printf("File is not a symbolic link: %s\n", file_path);
     }
 
-    // Get the directory name from the file path
-    char *dir_name = dirname(file_path);
-    printf("Directory name of %s: %s\n", file_path, dir_name);
-    free(dir_name); // Free the allocated memory for dirname
-
     return 0;
 }
