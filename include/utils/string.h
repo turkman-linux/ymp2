@@ -31,14 +31,6 @@ char* readfile(const char *path);
 int iseq(char* str1, char* str2);
 
 /**
- * @brief Calculates the length of a string.
- *
- * @param str The string whose length is to be calculated.
- * @return The length of the string.
- */
-size_t sstrlen(const char* str);
-
-/**
  * @brief Counts the number of tab characters in a given data string.
  *
  * @param data The string to search for tab characters.

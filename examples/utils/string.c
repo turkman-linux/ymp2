@@ -15,10 +15,6 @@ int main() {
         printf("'%s' is not equal to '%s'\n", str1, str2);
     }
 
-    // Calculate string length
-    size_t length = sstrlen(str1);
-    printf("Length of '%s': %zu\n", str1, length);
-
     // Count tab characters
     char* data = "Hello\tWorld\t!";
     long tab_count = count_tab(data);

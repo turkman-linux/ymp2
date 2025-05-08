@@ -35,16 +35,6 @@ visible int iseq(char* str1, char* str2){
     return strcmp(str1,str2) == 0;
 }
 
-visible size_t sstrlen(const char* str){
-    size_t ret = 0;
-    while(str && str[0] != '\0'){
-        str++;
-        ret++;
-    }
-    return ret;
-}
-
-
 visible long count_tab(char* data){
     int cnt = 0;
     while (*data == ' ') {
@@ -60,7 +50,7 @@ visible char* join(const char* f, char** array, int length){
     int len = 0;
     /* find output size */
     while(array[i]){
-        len += sstrlen(array[i]) + sstrlen(f);
+        len += strlen(array[i]) + strlen(f);
         i++;
     }
     /* allocate memory */
@@ -81,7 +71,7 @@ visible char* join(const char* f, char** array, int length){
 }
 
 visible char* str_add(char* str1, char* str2){
-    char* ret = calloc( (sstrlen(str1)+sstrlen(str2)+1),sizeof(char) );
+    char* ret = calloc( (strlen(str1)+strlen(str2)+1),sizeof(char) );
     strcpy(ret,str1);
     strcat(ret,str2);
     return ret;
@@ -91,7 +81,7 @@ visible char* trim(char* data) {
     int i=0;
     int j=0;
     int cnt=0;
-    int len = sstrlen(data);
+    int len = strlen(data);
     char* str = calloc(len+1, sizeof(char));
     strcpy(str,data);
     cnt = count_tab (data);
@@ -203,8 +193,8 @@ visible char* url_encode(const char *input) {
 
 
 visible int endswith(const char* data, const char* f) {
-    int i = sstrlen(data);
-    int j = sstrlen(f);
+    int i = strlen(data);
+    int j = strlen(f);
 
     if (i < j) {
         return 0;
@@ -214,8 +204,8 @@ visible int endswith(const char* data, const char* f) {
 }
 
 visible int startswith(const char* data, const char* f) {
-    int i = sstrlen(data);
-    int j = sstrlen(f);
+    int i = strlen(data);
+    int j = strlen(f);
 
     if (i < j) {
         return 0;
