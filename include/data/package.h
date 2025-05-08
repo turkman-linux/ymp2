@@ -65,4 +65,5 @@ Package* package_new();
 void package_load_from_file(Package* pkg, const char* path);
 
 
+bool package_extract(Package* pkg);
 #endif

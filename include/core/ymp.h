@@ -96,4 +96,11 @@ void ymp_add(Ymp* ymp, const char* name, void* args);
 
 int ymp_run(Ymp* ymp);
 
+/**
+* @brief Global Ymp struct.
+*/
+extern Ymp* global;
+
+char* get_storage();
+
 #endif

@@ -2,4 +2,7 @@
 #define DEBUG_MODE @DEBUG_MODE@
 
 #include <core/ymp.h>
+visible char* get_storage(){
+    return "@STORAGE@";
+}
 @CTX@
