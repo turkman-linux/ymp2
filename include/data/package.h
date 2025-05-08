@@ -23,6 +23,9 @@ typedef struct {
     bool is_source; /**< Source package status*/
     /** @cond */
     char* metadata; /** Package metadata. Used by internal functions. Do not Touch! */
+    char* files; /** Package metadata. Used by internal functions. Do not Touch! */
+    char* links; /** Package metadata. Used by internal functions. Do not Touch! */
+    array *errors;
     Archive *archive; /** Package archive*/
     /** @endcond */
 } Package;
@@ -36,5 +39,8 @@ typedef struct {
  *         failure).
  */
 Package* package_new();
+
+
+void package_load_from_file(Package* pkg, const char* path);
 
 #endif

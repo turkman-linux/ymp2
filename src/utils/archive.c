@@ -158,17 +158,17 @@ visible char* archive_readfile(Archive *data, const char *file_path) {
     while (archive_read_next_header(data->archive, &entry) == ARCHIVE_OK) {
         const char *entry_path = archive_entry_pathname(entry);
         if (strcmp(entry_path, file_path) != 0)
-            continue;
+           continue;
         size_t size = archive_entry_size(entry);
         ret = (char *)malloc(size + 1);
         if (ret == NULL) {
-            char* error_msg = build_string("Memory allocation failed");
+           char* error_msg = build_string("Memory allocation failed");
            error_add(data->errors, error_msg);
         }
         ssize_t bytes_read = archive_read_data(data->archive, ret, size);
         if (bytes_read < 0) {
-            char* error_msg = build_string("Failed to read file: %s", archive_error_string(data->archive));
-            free(ret);
+           char* error_msg = build_string("Failed to read file: %s", archive_error_string(data->archive));
+           free(ret);
            error_add(data->errors, error_msg);
         }
         ret[bytes_read] = '\0';
