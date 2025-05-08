@@ -10,9 +10,10 @@ add_project_arguments('-DPATH_MAX=1024', '-pthread', language: 'c')
 add_project_arguments('-Wall', '-Wextra', '-Werror',  language: 'c')
 
 libarchive = dependency('libarchive', required:true)
+openssl = dependency('openssl', required:true)
 
 srcs = []
-deps = [libarchive]
+deps = [libarchive, openssl]
 
 foreach src : run_command('find', 'src', '-type', 'f', '-iname', '*.c',check:true).stdout().strip().split('\n')
     srcs += src
