@@ -40,7 +40,29 @@ typedef struct {
  */
 Package* package_new();
 
-
+/**
+ * @brief Loads a package from a specified file.
+ *
+ * This function reads the contents of the file located at the given path
+ * and initializes the provided Package structure with the data from the file.
+ * It is expected that the file is in a specific format that the function can parse.
+ *
+ * @param pkg A pointer to a Package structure that will be populated with
+ *            the data loaded from the file. This structure must be allocated
+ *            before calling this function.
+ * @param path A pointer to a null-terminated string that specifies the path
+ *             to the file from which the package will be loaded. The function
+ *             will attempt to open this file for reading.
+ *
+ * @note Ensure that the Package structure is properly initialized before
+ *       calling this function. The caller is responsible for managing the
+ *       memory of the Package structure.
+ *
+ * @warning This function may modify the contents of the Package structure
+ *          if loading is successful. Ensure that the structure is in a valid
+ *          state before calling this function.
+ */
 void package_load_from_file(Package* pkg, const char* path);
+
 
 #endif
