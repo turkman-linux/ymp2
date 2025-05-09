@@ -70,7 +70,38 @@ bool isdir(const char *path);
 void create_dir(const char *dir);
 
 
+/**
+ * @brief Lists the contents of a directory.
+ *
+ * This function retrieves the names of all files and subdirectories in the
+ * specified directory path.
+ *
+ * @param path A pointer to a null-terminated string that specifies the path
+ *             to the directory to be listed.
+ *
+ * @return A null-terminated array of strings, where each string is the name
+ *         of a file or subdirectory in the specified directory. The caller
+ *         is responsible for freeing the memory allocated for the array and
+ *         its contents. Returns NULL if the directory cannot be accessed or
+ *         if an error occurs.
+ */
 char** listdir(const char* path);
+
+/**
+ * @brief Finds files in a specified directory.
+ *
+ * This function searches for files in the specified directory path and
+ * returns their names. The search criteria can be defined within the
+ * implementation of this function.
+ *
+ * @param path A pointer to a null-terminated string that specifies the path
+ *             to the directory in which to search for files.
+ *
+ * @return A null-terminated array of strings, where each string is the name
+ *         of a file found in the specified directory. The caller is responsible
+ *         for freeing the memory allocated for the array and its contents.
+ *         Returns NULL if the directory cannot be accessed or if an error occurs.
+ */
 char** find(const char* path);
 
 #endif

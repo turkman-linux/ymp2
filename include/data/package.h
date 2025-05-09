@@ -4,39 +4,42 @@
 
 /**
  * @file package.h
- * @brief Package data
+ * @brief Package data management
  *
- * This library store / load package information.
+ * This library provides functions to store and load package information.
  */
 
 /**
  * @struct Package
- * @brief package struct
+ * @brief Structure to hold package information
  *
- * Store package information.
+ * This structure stores various details about a package, including its name,
+ * version, dependencies, and other metadata.
  */
 typedef struct {
-    char* name; /**< Package name*/
-    char** dependencies; /**< Package dependencies list*/
-    char* version; /**< Package version string*/
-    int release; /**< Package release number*/
-    bool is_source; /**< Source package status*/
+    char* name; /**< Package name */
+    char** dependencies; /**< List of package dependencies */
+    char* version; /**< Package version string */
+    int release; /**< Package release number */
+    bool is_source; /**< Indicates if the package is a source package */
+    
     /** @cond */
-    char* metadata; /** Package metadata. Used by internal functions. Do not Touch! */
-    char* files; /** Package metadata. Used by internal functions. Do not Touch! */
-    char* links; /** Package metadata. Used by internal functions. Do not Touch! */
-    array *errors;
-    Archive *archive; /** Package archive*/
+    char* metadata; /**< Package metadata. Used by internal functions. Do not modify! */
+    char* files; /**< Package files metadata. Used by internal functions. Do not modify! */
+    char* links; /**< Package links metadata. Used by internal functions. Do not modify! */
+    array *errors; /**< List of errors encountered during package processing */
+    Archive *archive; /**< Pointer to the package archive */
     /** @endcond */
 } Package;
 
-
 /**
- * @brief Initializes a Package structure.
+ * @brief Initializes a new Package structure.
+ *
+ * This function allocates memory for a new Package structure and initializes
+ * its members to default values.
  *
  * @return A pointer to the newly created Package structure, or NULL if
- *         the initialization fails (e.g., due to memory allocation
- *         failure).
+ *         the initialization fails (e.g., due to memory allocation failure).
  */
 Package* package_new();
 
@@ -64,6 +67,17 @@ Package* package_new();
  */
 void package_load_from_file(Package* pkg, const char* path);
 
-
+/**
+ * @brief Extracts the contents of a package.
+ *
+ * This function extracts the contents of the specified package. The exact
+ * behavior of the extraction process depends on the implementation.
+ *
+ * @param pkg A pointer to the Package structure that contains the package
+ *            to be extracted.
+ *
+ * @return true if the extraction was successful, false otherwise.
+ */
 bool package_extract(Package* pkg);
+
 #endif
