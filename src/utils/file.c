@@ -81,6 +81,6 @@ visible char** listdir(const char* path){
     }
     size_t len = 0;
     char** dirs = array_get(a, &len);
-    free(a);
+    array_unref(a);
     return dirs;
 }
