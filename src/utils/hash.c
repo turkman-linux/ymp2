@@ -5,7 +5,7 @@
 #include <string.h>
 #include <openssl/evp.h>
 #include <utils/file.h>
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 8196
 #define OPENSSL_API_COMPAT
 
 #define SHA1   0
