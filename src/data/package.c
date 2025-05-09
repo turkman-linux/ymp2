@@ -99,6 +99,9 @@ visible bool package_extract(Package* pkg){
     char* tmpdir = build_string("%s/%s/quarantine/tmp/%s", destdir, get_storage(), pkg->name);
     char* rootfs = build_string("%s/%s/quarantine/rootfs", destdir, get_storage());
     create_dir(rootfs);
+    create_dir(build_string("%s/../metadata", rootfs));
+    create_dir(build_string("%s/../files", rootfs));
+    create_dir(build_string("%s/../links", rootfs));
     create_dir(tmpdir);
     archive_set_target(pkg->archive, tmpdir);
     archive_extract_all(pkg->archive);
