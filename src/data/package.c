@@ -114,8 +114,10 @@ visible bool package_extract(Package* pkg){
                 warning("%s Excepted %s <> Received %s\n", "Package archive hash is wrong!", hash, yaml_hash);
                 return false;
             }
+            break;
         }
         i++;
     }
+    free(files);
     return true;
 }
