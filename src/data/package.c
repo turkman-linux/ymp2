@@ -97,6 +97,8 @@ visible bool package_extract(Package* pkg){
     }
     char* destdir = variable_get_value(global->variables,"DESTDIR");
     char* tmpdir = build_string("%s/%s/quarantine/tmp/%s", destdir, get_storage(), pkg->name);
+    char* rootfs = build_string("%s/%s/quarantine/rootfs", destdir, get_storage());
+    create_dir(rootfs);
     create_dir(tmpdir);
     archive_set_target(pkg->archive, tmpdir);
     archive_extract_all(pkg->archive);
@@ -108,16 +110,25 @@ visible bool package_extract(Package* pkg){
             continue;
         }
         if(startswith(files[i],"data.")) {
-            char* hash = calculate_sha1(build_string("%s/%s", tmpdir, files[i]));
+            char* file = build_string("%s/%s", tmpdir, files[i]);
+            char* hash = calculate_sha1(file);
             char* yaml_hash = yaml_get_value(pkg->metadata, "archive-hash");
             if(!iseq(hash, yaml_hash)){
                 warning("%s Excepted %s <> Received %s\n", "Package archive hash is wrong!", hash, yaml_hash);
                 return false;
             }
+            Archive *data = archive_new();
+            archive_load(data, file);
+            archive_set_target(data, rootfs);
+            archive_extract_all(data);
+            free(data);
             break;
         }
         i++;
     }
     free(files);
+    rename(build_string("%s/metadata.yaml", tmpdir), build_string("%s/../metadata/%s.yaml", rootfs, pkg->name));
+    rename(build_string("%s/files", tmpdir), build_string("%s/../files/%s", rootfs, pkg->name));
+    rename(build_string("%s/links", tmpdir), build_string("%s/../links/%s", rootfs, pkg->name));
     return true;
 }
