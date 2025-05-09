@@ -54,5 +54,15 @@ int main() {
         printf("File is not a symbolic link: %s\n", file_path);
     }
 
+    // List directory
+    char** dirs = listdir("/");
+    size_t i=0;
+    while(dirs[i]){
+        // dont print hidden
+        if(dirs[i][0] != '.') {
+            printf("%s\n", dirs[i]);
+        }
+        i++;
+    }
     return 0;
 }

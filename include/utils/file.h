@@ -69,4 +69,6 @@ bool isdir(const char *path);
  */
 void create_dir(const char *dir);
 
+
+char** listdir(const char* path);
 #endif

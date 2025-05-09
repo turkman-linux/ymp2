@@ -44,8 +44,7 @@ visible long count_tab(char* data){
     return cnt;
 }
 
-visible char* join(const char* f, char** array, int length){
-    (void) length;
+visible char* join(const char* f, char** array){
     int i = 0;
     int len = 0;
     /* find output size */

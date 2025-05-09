@@ -22,7 +22,7 @@ int main() {
 
     // Join strings
     char* array[] = {"Hello", "World", "from", "C!", NULL};
-    char* joined = join(" ", array, 4);
+    char* joined = join(" ", array);
     printf("Joined string: '%s'\n", joined);
     free(joined); // Remember to free the allocated memory
 

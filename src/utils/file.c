@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <limits.h>
 
+#include <utils/array.h>
+
 visible uint64_t filesize(const char* path) {
     struct stat st;
     if (stat(path, &st) == 0) {
@@ -49,7 +51,7 @@ visible void create_dir(const char *dir) {
 
     snprintf(tmp, sizeof(tmp), "%s", dir);
     len = strlen(tmp);
-    
+
     // Remove trailing slash if present
     if (len > 0 && tmp[len - 1] == '/') {
         tmp[len - 1] = '\0';
@@ -66,3 +68,19 @@ visible void create_dir(const char *dir) {
     mkdir(tmp, 0755); // Create the final directory
 }
 
+visible char** listdir(const char* path){
+    DIR *dp;
+    struct dirent *ep;
+    dp = opendir (path);
+    array *a = array_new();
+    if (dp != NULL) {
+        while ((ep = readdir (dp))) {
+            array_add(a,ep->d_name);
+        }
+        (void) closedir (dp);
+    }
+    size_t len = 0;
+    char** dirs = array_get(a, &len);
+    free(a);
+    return dirs;
+}

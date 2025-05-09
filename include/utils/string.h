@@ -43,10 +43,9 @@ long count_tab(char* data);
  *
  * @param f The delimiter to use for joining.
  * @param array The array of strings to join.
- * @param length The number of strings in the array.
  * @return A new string containing the joined strings.
  */
-char* join(const char* f, char** array, int length);
+char* join(const char* f, char** array);
 
 /**
  * @brief Concatenates two strings.
