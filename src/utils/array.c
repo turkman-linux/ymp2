@@ -5,15 +5,7 @@
 
 #include <utils/array.h>
 
-#define strdup(A) strcpy(calloc(strlen(A) + 1, sizeof(char)), A)
-
-static int string_compare(const void* a, const void* b){
-    return strcmp(*(char**)a, *(char**)b);
-}
-
-static void csort(char* arr[], int n){
-    qsort(arr, n, sizeof(const char*), string_compare);
-}
+#define csort(A, B) qsort(A, B, sizeof(const char*), (int (*)(const void *, const void *))strcmp)
 
 visible array *array_new() {
     array *arr = (array *)calloc(1,sizeof(array));
