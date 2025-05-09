@@ -48,15 +48,16 @@ void logger_set_status(int type, bool status);
  * This function prints a formatted message to the log based on the
  * specified log type. It supports variable arguments similar to printf.
  *
+ * @param caller string. It can be __func__.
  * @param type The log type for the message. This should be one of the
  *             defined log levels (PRINT, DEBUG, WARNING, INFO).
  * @param format The format string for the message, similar to printf.
  * @param ... Additional arguments for the format string.
  * @return An integer indicating the success or failure of the print operation.
  */
-int print_fn(int type, const char* format, ...);
+int print_fn(const char* caller, int type, const char* format, ...);
 
-/** 
+/**
  * @brief Macro for printing general messages.
  *
  * This macro simplifies the logging of general print messages.
@@ -64,9 +65,9 @@ int print_fn(int type, const char* format, ...);
  * @param A The format string for the message.
  * @param ... Additional arguments for the format string.
  */
-#define print(A, ...) print_fn(PRINT, A, ##__VA_ARGS__)
+#define print(A, ...) print_fn(__func__, PRINT, A, ##__VA_ARGS__)
 
-/** 
+/**
  * @brief Macro for printing debug messages.
  *
  * This macro simplifies the logging of debug messages.
@@ -74,9 +75,9 @@ int print_fn(int type, const char* format, ...);
  * @param A The format string for the message.
  * @param ... Additional arguments for the format string.
  */
-#define debug(A, ...)   print_fn(DEBUG, A, ##__VA_ARGS__)
+#define debug(A, ...)   print_fn(__func__, DEBUG, A, ##__VA_ARGS__)
 
-/** 
+/**
  * @brief Macro for printing informational messages.
  *
  * This macro simplifies the logging of informational messages.
@@ -84,9 +85,9 @@ int print_fn(int type, const char* format, ...);
  * @param A The format string for the message.
  * @param ... Additional arguments for the format string.
  */
-#define info(A, ...)    print_fn(INFO, A, ##__VA_ARGS__)
+#define info(A, ...)    print_fn(__func__, INFO, A, ##__VA_ARGS__)
 
-/** 
+/**
  * @brief Macro for printing warning messages.
  *
  * This macro simplifies the logging of warning messages.
@@ -94,6 +95,6 @@ int print_fn(int type, const char* format, ...);
  * @param A The format string for the message.
  * @param ... Additional arguments for the format string.
  */
-#define warning(A, ...) print_fn(WARNING, A, ##__VA_ARGS__)
+#define warning(A, ...) print_fn(__func__, WARNING, A, ##__VA_ARGS__)
 
 #endif

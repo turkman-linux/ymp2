@@ -6,12 +6,7 @@
 
 typedef int (*logger)(const char*, ...);
 
-static int dummy(const char* format, ...){
-    (void)format;
-    return 0;
-}
-
-static logger print_functions[] = {(logger)vprintf, (logger)dummy, (logger)dummy, (logger)dummy};
+static logger print_functions[] = {(logger)vprintf, NULL, NULL, NULL};
 
 visible void logger_set_status(int type, bool status){
     if(type > (int)(sizeof(print_functions) / sizeof(logger))){
@@ -20,13 +15,20 @@ visible void logger_set_status(int type, bool status){
     if(status){
         print_functions[type] = (logger)vprintf;
     } else {
-        print_functions[type] = dummy;
+        print_functions[type] = NULL;
     }
 }
 
-visible int print_fn(int type, const char* format, ...){
+visible int print_fn(const char* caller, int type, const char* format, ...){
+    if(print_functions[type] == NULL){
+        return 0;
+    }
+
     va_list args;
     va_start(args, format);
+    if(type != PRINT){
+        printf("[%s]:", caller);
+    }
 
     int status = print_functions[type](format, args);
 
