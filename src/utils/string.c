@@ -9,7 +9,14 @@
 
 #include <utils/string.h>
 
+extern char* resource(const char* path);
+
 visible char* readfile(const char *path) {
+    if(strlen(path) > 2){
+        if(path[0] == ':' && path[1] == '/'){
+            return resource(path);
+        }
+    }
     FILE *file = fopen(path, "r");
     if (!file) {
         perror("Failed to open file");

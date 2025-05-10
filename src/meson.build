@@ -1,0 +1,38 @@
+# Generate ctx.c file
+ctx_c = ''
+foreach ops : run_command('find', 'operations','-type','f',check:true).stdout().strip().split('\n')
+    name = ops.split('/')[-1].split('.')[0]
+    ctx_c = ctx_c + 'extern void '+name+'_init(OperationManager *manager);\n'
+endforeach
+ctx_c += '\nvoid ctx_init(OperationManager *manager){\n'
+foreach ops : run_command('find', 'operations','-type','f',check:true).stdout().strip().split('\n')
+    name = ops.split('/')[-1].split('.')[0]
+    ctx_c += '  '+name+'_init(manager);\n'
+endforeach
+ctx_c += '}\n\n'
+ctx_c += '#include <string.h>\n'
+ctx_c += 'char* resource(const char* name){\n'
+foreach data : run_command('find', '../data','-type','f',check:true).stdout().strip().split('\n')
+    data = data.substring(7)
+    fdata = run_command('cat', '../data/'+data ,check:true).stdout()
+    ctx_c += '    if(strcmp(name, ":'+data+'") == 0) {\n'
+    ctx_c += '        return '
+    foreach line : fdata.strip().split('\n')
+        ctx_c += '\n          "'+line.replace('\\', '\\\\').replace('"', '\\"')+'\\n"'
+    endforeach
+    ctx_c += ';\n    }\n'
+endforeach
+ctx_c += '    return NULL;\n}\n\n'
+
+configure_file(
+  input: 'ctx.c.in',
+  output: 'ctx.c',
+  configuration: {
+    'VERSION': meson.project_version(),
+    'DEBUG_MODE': get_option('debug') ? '1' : '0',
+    'STORAGE': '/var/lib/ymp/',
+    'CTX': ctx_c
+  }
+)
+
+srcs += [meson.current_build_dir()+'/ctx.c']

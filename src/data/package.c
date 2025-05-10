@@ -29,6 +29,7 @@ visible Package* package_new() {
 
 
 visible void package_load_from_file(Package* pkg, const char* path) {
+    debug("Package load from file: %s\n", path);
     // Check if the specified path is a valid file
     if(!isfile(path)){
         error_add(pkg->errors, build_string("Failed to load package archive %s", path));
@@ -86,52 +87,113 @@ visible void package_load_from_file(Package* pkg, const char* path) {
     pkg->dependencies = yaml_get_array(pkg->metadata, "dependencies", &dep_count);
 }
 
-visible bool package_extract(Package* pkg){
-    if(pkg == NULL){
+static bool package_build(Package* pkg, const char* rootfs){
+    // Create build directory
+    char* md5 = calculate_md5(pkg->archive->archive_path);
+    char* build_dir = build_string("/tmp/ymp-build/%s", md5);
+    debug("Package build: %s (%s)\n", pkg->name, build_dir);
+    create_dir(build_dir);
+    // Extract archive files
+    archive_set_target(pkg->archive, build_dir);
+    archive_extract_all(pkg->archive);
+    // Build package from source
+    (void)rootfs;
+    return true;
+}
+
+
+// Function to extract a package
+visible bool package_extract(Package* pkg) {
+    // Check if the package pointer is NULL
+    if(pkg == NULL) {
         warning("%s\n", "Invalid package!");
-        return false;
+        return false; // Return false if the package is invalid
     }
-    if(pkg->archive == NULL){
+
+    // Check if the package archive is NULL
+    if(pkg->archive == NULL) {
         warning("%s\n", "Invalid package archive!");
-        return false;
+        return false; // Return false if the archive is invalid
     }
-    char* destdir = variable_get_value(global->variables,"DESTDIR");
+    info("Package extract: %s\n", pkg->name);
+
+    // Get the destination directory from global variables
+    char* destdir = variable_get_value(global->variables, "DESTDIR");
+
+    // Build the root filesystem path for quarantine
     char* rootfs = build_string("%s/%s/quarantine/rootfs", destdir, get_storage());
+
+    // If package is source, build instead of extract
+    if(pkg->is_source){
+        return package_build(pkg, rootfs);
+    }
+
+    // Build a temporary directory path for extraction
     char* tmpdir = build_string("%s/../tmp/%s", rootfs, pkg->name);
+
+    // Create necessary directories for the extraction process
     create_dir(rootfs);
     create_dir(build_string("%s/../metadata", rootfs));
     create_dir(build_string("%s/../files", rootfs));
     create_dir(build_string("%s/../links", rootfs));
     create_dir(tmpdir);
+
+    // Set the target for the archive extraction to the temporary directory
     archive_set_target(pkg->archive, tmpdir);
+
+    // Extract all contents of the package archive
     archive_extract_all(pkg->archive);
-    size_t i=0;
-    char** files = listdir(tmpdir);
-    while(files[i]){
-        if(!isfile(files[i])){
+
+    size_t i = 0; // Initialize index for file listing
+    char** files = listdir(tmpdir); // List files in the temporary directory
+
+    // Loop through the files in the temporary directory
+    while(files[i]) {
+        // Skip if the current item is not a file
+        if(!isfile(files[i])) {
             i++;
             continue;
         }
-        if(startswith(files[i],"data.")) {
+
+        // Check if the file name starts with "data."
+        if(startswith(files[i], "data.")) {
+            // Build the full path for the data file
             char* file = build_string("%s/%s", tmpdir, files[i]);
+
+            // Calculate the SHA1 hash of the data file
             char* hash = calculate_sha1(file);
+
+            // Get the expected hash from the package metadata
             char* yaml_hash = yaml_get_value(pkg->metadata, "archive-hash");
-            if(!iseq(hash, yaml_hash)){
+
+            // Compare the calculated hash with the expected hash
+            if(!iseq(hash, yaml_hash)) {
                 warning("%s Excepted %s <> Received %s\n", "Package archive hash is wrong!", hash, yaml_hash);
-                return false;
+                return false; // Return false if hashes do not match
             }
+            debug("Package archive hash: %s\n", hash);
+
+            // Create a new archive object for the data file
             Archive *data = archive_new();
-            archive_load(data, file);
+            archive_load(data, file); // Load the data file into the archive
+
+            // Set the target for the data extraction to the root filesystem
             archive_set_target(data, rootfs);
-            archive_extract_all(data);
-            free(data);
-            break;
+            archive_extract_all(data); // Extract all contents of the data archive
+
+            free(data); // Free the archive object
+            break; // Exit the loop after processing the data file
         }
-        i++;
+        i++; // Move to the next file
     }
-    free(files);
+
+    free(files); // Free the list of files
+
+    // Rename and move the metadata, files, and links to their respective directories
     rename(build_string("%s/metadata.yaml", tmpdir), build_string("%s/../metadata/%s.yaml", rootfs, pkg->name));
     rename(build_string("%s/files", tmpdir), build_string("%s/../files/%s", rootfs, pkg->name));
     rename(build_string("%s/links", tmpdir), build_string("%s/../links/%s", rootfs, pkg->name));
-    return true;
+
+    return true; // Return true if extraction was successful
 }
+

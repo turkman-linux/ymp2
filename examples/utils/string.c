@@ -15,6 +15,13 @@ int main() {
         printf("'%s' is not equal to '%s'\n", str1, str2);
     }
 
+    // Read file
+    char *os_release = readfile("/etc/os-release");
+    printf("%s\n", os_release);
+    // Read resource
+    char* example_txt = readfile(":/example.txt");
+    printf("%s\n", example_txt);
+
     // Count tab characters
     char* data = "Hello\tWorld\t!";
     long tab_count = count_tab(data);
