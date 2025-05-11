@@ -3,6 +3,16 @@
 #define _build_h
 /**
  * @file build.h
+ * @brief YMP build context management.
+ *
+ * This header file defines the structure and functions necessary for managing
+ * the context of a YMP (Your Module Package) build. It includes the definition
+ * of the `ympbuild` structure, which holds information about the build process,
+ * including the context, file path, and header data. This file serves as an
+ * interface for initializing, configuring, and executing YMP builds.
+ */
+/**
+ * @struct ympbuild
  * @brief Structure representing a YMP build context.
  *
  * This structure holds the context, path, and header information for a YMP build.

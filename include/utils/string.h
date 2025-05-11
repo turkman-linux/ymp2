@@ -153,10 +153,6 @@ char* build_string(char* format, ...);
  * @warning If `oldSub` is an empty string, the behavior is undefined. Ensure that 
  *          `oldSub` is not empty before calling this function.
  *
- * @example
- * char* result = str_replace("Hello World", "World", "C!");
- * // result now contains "Hello C!"
- * free(result); // Remember to free the allocated memory.
  */
 char* str_replace(const char* str, const char* oldSub, const char* newSub);
 
