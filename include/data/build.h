@@ -70,4 +70,19 @@ char** ympbuild_get_array(ympbuild* ymp, const char* name);
  */
 bool build_from_path(const char* path);
 
+/**
+ * @brief Executes a specified function within the YMP build context.
+ *
+ * This function runs a function identified by the given name within the
+ * context of the provided YMP build structure. It may perform operations
+ * such as building, compiling, or processing based on the function's
+ * implementation.
+ *
+ * @param ymp Pointer to the YMP build context structure.
+ * @param name The name of the function to execute.
+ * @return int Returns 0 on success, or a negative error code on failure.
+ */
+int ympbuild_run_function(ympbuild* ymp, const char* name);
+
+
 #endif
