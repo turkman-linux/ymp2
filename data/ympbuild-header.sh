@@ -33,3 +33,71 @@ exec 0< /dev/null
 set -o pipefail
 shopt -s expand_aliases
 
+function meson(){
+    if [[ "$1" == "setup" ]] ; then
+        command meson "$@" \
+            -Ddefault_library=both \
+            -Dwrap_mode=nodownload \
+            -Db_lto=true \
+            -Db_pie=true
+    else
+        command meson "$@"
+    fi
+}
+
+function target(){
+    if [[ "$1" == "@BUILD_TARGET@" ]] ; then
+        return 0
+    fi
+    return 1
+}
+readonly -f target
+
+function buildtype (){
+    if [[ "$1" == "$BUILDTYPE" ]] ; then
+        return 0
+    fi
+    return 1
+}
+readonly -f buildtype
+
+function use(){
+    if ! echo ${uses[@]} ${uses_extra[@]} ${arch[@]} all extra | grep "$1" >/dev/null; then
+        echo "Use flag \"$1\" is unknown!"
+        return 1
+    fi
+    if [[ "${use_all}" == "31" ]] ; then
+        if echo ${uses[@]} | grep "$1" >/dev/null; then
+            return 0
+        fi
+    fi
+    if [[ "${use_extra}" == "31" ]] ; then
+        if echo ${uses_extra[@]} | grep "$1" >/dev/null; then
+            return 0
+        fi
+    fi
+    for use in ${uses[@]} ${uses_extra[@]}; do
+        if [[ "${use}" == "$1" ]] ; then
+            flag="use_$1"
+            [[ "${!flag}" == "31" ]]
+            return $?
+        fi
+    done
+}
+readonly -f use
+
+function use_opt(){
+    if use "$1" ; then
+        echo $2
+    else
+        echo $3
+    fi
+}
+readonly -f use_opt
+
+function eapply(){
+    for aa in $* ; do
+        patch -Np1 "$aa"
+    done
+}
+readonly -f eapply

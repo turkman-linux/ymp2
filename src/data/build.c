@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <core/ymp.h>
 #include <core/logger.h>
@@ -27,6 +29,20 @@ visible char** ympbuild_get_array(ympbuild* ymp, const char* name){
 
 }
 
+visible int ympbuild_run_function(ympbuild* ymp, const char* name) {
+    char* command = build_string("set +e ; %s \n %s \n set -e \n %s", ymp->header, ymp->ctx, name);
+    char* args[] = {"/bin/bash", "-c", command, NULL};
+    pid_t pid = fork();
+    if(pid == 0){
+        execvp(args[0], args);
+        return -1;
+    } else {
+        int status = 0;
+        (void)waitpid(pid, &status, 0);
+        return status;
+    }
+}
+
 visible bool build_from_path(const char* path){
     if(!isfile(build_string("%s/ympbuild",path))){
         return false;
@@ -43,6 +59,10 @@ visible bool build_from_path(const char* path){
     // fetch values
     char* name = ympbuild_get_value(ymp, "name");
     char** deps = ympbuild_get_array(ymp, "depends");
+    char** sources = ympbuild_get_array(ymp, "source");
+    for(size_t i=0; sources[i]; i++){
+        debug("Source: %s\n", sources[i]);
+    }
     (void)name; (void)deps;
     return true;
 }
