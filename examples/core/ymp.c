@@ -9,9 +9,12 @@ int main(int argc, char** argv){
         char* name = ymp->manager->operations[i].name; // Fetch operation name from manager
         printf("  Operation: %s\n", name); // Print operation name
     }
-    int rc = operation_main(ymp->manager, "print", "Hello World\n"); // Run an operation
-    ymp_add(ymp, "print", "Hello\n");
-    ymp_add(ymp, "print", "World\n");
+    char* args[] = {"Hello World\n", NULL};
+    int rc = operation_main(ymp->manager, "print", args); // Run an operation
+    char* arg1[] = {"Hello", NULL};
+    char* arg2[] = {"World", NULL};
+    ymp_add(ymp, "print", arg1);
+    ymp_add(ymp, "print", arg2);
     rc = ymp_run(ymp);
     return rc;
 }
