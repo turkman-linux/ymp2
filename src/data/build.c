@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -15,8 +16,8 @@
 
 visible char* ympbuild_get_value(ympbuild* ymp, const char* name) {
     char* command = build_string(
-    "exec 2>/dev/null\n"
-    "%s\n"
+    "exec <&-\n"
+    "{\n%s\n} &>/dev/null\n"
     "echo ${%s}", ymp->ctx, name);
     char* args[] = {"/bin/bash", "-c", command, NULL};
     char* output = strip(getoutput(args));
@@ -27,8 +28,8 @@ visible char* ympbuild_get_value(ympbuild* ymp, const char* name) {
 
 visible char** ympbuild_get_array(ympbuild* ymp, const char* name){
     char* command = build_string(
-    "exec 2>/dev/null\n"
-    "%s\n"
+    "exec <&-\n"
+    "{\n%s\n} &>/dev/null\n"
     "echo ${%s[@]}", ymp->ctx, name);
     char* args[] = {"/bin/bash", "-c", command, NULL};
     char* output = strip(getoutput(args));
@@ -40,6 +41,7 @@ visible char** ympbuild_get_array(ympbuild* ymp, const char* name){
 
 visible int ympbuild_run_function(ympbuild* ymp, const char* name) {
     char* command = build_string(
+        "exec <&-\n"
         "set +e ; %s\n"
         "%s\n"
         "set -e \n"
@@ -79,8 +81,21 @@ visible bool build_from_path(const char* path){
     char* name = ympbuild_get_value(ymp, "name");
     char** deps = ympbuild_get_array(ymp, "depends");
     char** sources = ympbuild_get_array(ymp, "source");
-    for(size_t i=0; sources[i]; i++){
-        debug("Source: %s\n", sources[i]);
+    // detect hash
+    char** hashs = NULL;
+    char* hash_types[] = {"sha512sums", "sha256sums", "sha1sums", "md5sums", NULL};
+    for(size_t i=0; hash_types[i]; i++){
+        hashs = ympbuild_get_array(ymp, hash_types[i]);
+        if(strlen(hashs[0]) > 0){
+            break;
+        }
+        if(i > 1){
+            warning("Weak hash algorithm (%s) detected!.\n", hash_types[i]);
+        }
+        free(hashs);
+    }
+    for(size_t i=0; sources[i] && hashs[i]; i++){
+        debug("Source: %s %s\n", sources[i], hashs[i]);
     }
     (void)name; (void)deps;
     // Cleanup
