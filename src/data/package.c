@@ -98,6 +98,9 @@ static bool package_build(Package* pkg, const char* rootfs){
     archive_extract_all(pkg->archive);
     // Build package from source
     (void)rootfs;
+    // Cleanup
+    free(md5);
+    free(build_dir);
     return true;
 }
 
@@ -122,6 +125,9 @@ visible bool package_extract(Package* pkg) {
 
     // Build the root filesystem path for quarantine
     char* rootfs = build_string("%s/%s/quarantine/rootfs", destdir, get_storage());
+    char* metadata_dir = build_string("%s/../metadata", rootfs);
+    char* files_dir = build_string("%s/../metadata", rootfs);
+    char* links_dir = build_string("%s/../metadata", rootfs);
 
     // If package is source, build instead of extract
     if(pkg->is_source){
@@ -133,9 +139,9 @@ visible bool package_extract(Package* pkg) {
 
     // Create necessary directories for the extraction process
     create_dir(rootfs);
-    create_dir(build_string("%s/../metadata", rootfs));
-    create_dir(build_string("%s/../files", rootfs));
-    create_dir(build_string("%s/../links", rootfs));
+    create_dir(metadata_dir);
+    create_dir(files_dir);
+    create_dir(files_dir);
     create_dir(tmpdir);
 
     // Set the target for the archive extraction to the temporary directory
@@ -169,6 +175,9 @@ visible bool package_extract(Package* pkg) {
             // Compare the calculated hash with the expected hash
             if(!iseq(hash, yaml_hash)) {
                 warning("%s Excepted %s <> Received %s\n", "Package archive hash is wrong!", hash, yaml_hash);
+                free(hash);
+                free(yaml_hash);
+                free(file);
                 return false; // Return false if hashes do not match
             }
             debug("Package archive hash: %s\n", hash);
@@ -181,6 +190,9 @@ visible bool package_extract(Package* pkg) {
             archive_set_target(data, rootfs);
             archive_extract_all(data); // Extract all contents of the data archive
 
+            free(hash);
+            free(yaml_hash);
+            free(file);
             free(data); // Free the archive object
             break; // Exit the loop after processing the data file
         }
@@ -190,9 +202,17 @@ visible bool package_extract(Package* pkg) {
     free(files); // Free the list of files
 
     // Rename and move the metadata, files, and links to their respective directories
-    rename(build_string("%s/metadata.yaml", tmpdir), build_string("%s/../metadata/%s.yaml", rootfs, pkg->name));
-    rename(build_string("%s/files", tmpdir), build_string("%s/../files/%s", rootfs, pkg->name));
-    rename(build_string("%s/links", tmpdir), build_string("%s/../links/%s", rootfs, pkg->name));
+    #define rename_free(A,B) {char *a=A; char *b=B; rename(a,b) ; free(a) ; free(b);}
+    rename_free(build_string("%s/metadata.yaml", tmpdir), build_string("%s/../metadata/%s.yaml", rootfs, pkg->name));
+    rename_free(build_string("%s/files", tmpdir), build_string("%s/../files/%s", rootfs, pkg->name));
+    rename_free(build_string("%s/links", tmpdir), build_string("%s/../links/%s", rootfs, pkg->name));
+
+    // Cleanup
+    free(tmpdir);
+    free(rootfs);
+    free(metadata_dir);
+    free(files_dir);
+    free(links_dir);
 
     return true; // Return true if extraction was successful
 }
