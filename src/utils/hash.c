@@ -7,15 +7,12 @@
 #include <utils/file.h>
 #include <core/logger.h>
 
+#include <utils/hash.h>
+
 #define BUFFER_SIZE 8196
 #define OPENSSL_API_COMPAT
 
-#define SHA1   0
-#define MD5    1
-#define SHA256 2
-#define SHA512 3
-
-static char *calculate_hash(int type, const char *path) {
+visible char *calculate_hash(int type, const char *path) {
     debug("calculate hash: %d %s\n", type, path);
     unsigned char buffer[BUFFER_SIZE];
     unsigned char digest[EVP_MAX_MD_SIZE];
@@ -26,17 +23,17 @@ static char *calculate_hash(int type, const char *path) {
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
     switch(type){
-        case SHA1:
-            md = EVP_sha1();
-            break;
-        case MD5:
-            md = EVP_md5();
+        case SHA512:
+            md = EVP_sha512();
             break;
         case SHA256:
             md = EVP_sha256();
             break;
-        case SHA512:
-            md = EVP_sha512();
+        case SHA1:
+            md = EVP_sha1();
+            break;
+        default:
+            md = EVP_md5();
             break;
     }
     mdctx = EVP_MD_CTX_create();

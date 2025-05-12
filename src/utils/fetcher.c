@@ -3,6 +3,8 @@
 #include <curl/curl.h>
 #include <stdbool.h>
 
+#include <core/logger.h>
+
 #include <utils/fetcher.h>
 
 typedef struct {
@@ -21,6 +23,7 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 
 // Function to fetch a file from a URL and save it to a specified path
 visible bool fetch(const char* url, const char* path) {
+    debug("Fetch: %s -> %s\n", url, path);
     fetcher* fetch = malloc(sizeof(fetcher));
 
     fetch->curl = curl_easy_init();

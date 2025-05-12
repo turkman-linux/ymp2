@@ -11,6 +11,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <libgen.h>
 
 #include <utils/array.h>
 #include <utils/string.h>
@@ -206,6 +207,12 @@ visible bool copy_file(const char *sourceFile, const char *destFile) {
         perror("Error opening source file");
         return false;
     }
+    
+    // Create destination file directory
+    char* dir = strdup(destFile);
+    dirname(dir);
+    create_dir(dir);
+    free(dir);
 
     // Open the destination file in write-only mode, create it if it doesn't exist
     dest = open(destFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);

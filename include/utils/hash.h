@@ -1,5 +1,14 @@
 #ifndef _hash_h
 #define _hash_h
+
+
+#define SHA512 0
+#define SHA256 1
+#define SHA1   2
+#define MD5    3
+
+char *calculate_hash(int type, const char *path);
+
 /**
  * @file hash.h
  * @brief Calculates the SHA-1 hash of a file.

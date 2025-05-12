@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <libgen.h>
 
 #include <core/ymp.h>
 #include <core/logger.h>
@@ -10,6 +11,8 @@
 #include <utils/string.h>
 #include <utils/file.h>
 #include <utils/hash.h>
+#include <utils/fetcher.h>
+#include <utils/archive.h>
 
 #include <data/build.h>
 #include <config.h>
@@ -62,6 +65,44 @@ visible int ympbuild_run_function(ympbuild* ymp, const char* name) {
     }
 }
 
+static char* hash_types[] = {"sha512sums", "sha256sums", "sha1sums", "md5sums", NULL};
+
+static bool get_resource(const char* path, const char* name, size_t type, const char* source, const char* hash){
+    debug("Source: %s %s\n", source, hash);
+    // Get file name
+    char* source_name = basename((char*)source);
+    // Get target path
+    char* target = build_string("%s/cache/%s",BUILD_DIR, name);
+    char* source_target = build_string("%s/%s",target, source_name);
+    bool status = true;
+    if(!isfile(source_target)){
+        // Download or Copy
+        create_dir(target);
+        char* local_file = build_string("%s/%s", path, source);
+        if(isfile(local_file)){
+            free(source_target);
+            source_target = build_string("%s/%s",target, source);
+            status = copy_file(local_file, source_target);
+            
+        } else {
+            status = fetch(source, source_target);
+        }
+        free(local_file);
+    }
+    // Check archive hash
+    char* data_hash = calculate_hash(type, source_target);
+    if(iseq((char*)hash, "SKIP")){
+        warning("Hash control disabled for: %s\n", source_name);
+    }else if(!iseq(data_hash, (char*)hash)){
+        print("Archive hash is invalid:\n  -> Excepted: %s\n  -> Received: %s\n", hash, data_hash);
+        return false;
+    }
+    // Cleanup
+    free(target);
+    free(source_target);
+    return status;
+}
+
 visible bool build_from_path(const char* path){
     char* ympfile = build_string("%s/ympbuild",path);
     if(!isfile(ympfile)){
@@ -83,19 +124,36 @@ visible bool build_from_path(const char* path){
     char** sources = ympbuild_get_array(ymp, "source");
     // detect hash
     char** hashs = NULL;
-    char* hash_types[] = {"sha512sums", "sha256sums", "sha1sums", "md5sums", NULL};
-    for(size_t i=0; hash_types[i]; i++){
-        hashs = ympbuild_get_array(ymp, hash_types[i]);
+    size_t hash_type = 0;
+    for(hash_type=0; hash_types[hash_type]; hash_type++){
+        hashs = ympbuild_get_array(ymp, hash_types[hash_type]);
         if(strlen(hashs[0]) > 0){
             break;
         }
-        if(i > 1){
-            warning("Weak hash algorithm (%s) detected!.\n", hash_types[i]);
+        if(hash_type > 1){
+            warning("Weak hash algorithm (%s) detected!.\n", hash_types[hash_type]);
         }
         free(hashs);
     }
+    // copy ympbuild file
+    char* target = build_string("%s/cache/%s/ympbuild",BUILD_DIR, name);
+    copy_file(ympfile, target);
+    free(target);
+    // copy resources
     for(size_t i=0; sources[i] && hashs[i]; i++){
-        debug("Source: %s %s\n", sources[i], hashs[i]);
+        if(!get_resource(path, name, hash_type, sources[i], hashs[i])){
+            return false;
+        }
+    }
+    char* src_cache = build_string("%s/cache/%s/",BUILD_DIR, name);
+    char** src_files = find(src_cache);
+    Archive *a = archive_new();
+    for(size_t i=0; src_files[i];i++){
+        if(archive_is_archive(a, src_files[i])){
+            archive_load(a, src_files[i]);
+            archive_set_target(a, ymp->path);
+            archive_extract_all(a);
+        }
     }
     (void)name; (void)deps;
     // Cleanup
