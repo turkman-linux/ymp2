@@ -18,7 +18,7 @@ visible char* ympbuild_get_value(ympbuild* ymp, const char* name) {
     char* command = build_string(
     "exec <&-\n"
     "{\n%s\n} &>/dev/null\n"
-    "echo ${%s}", ymp->ctx, name);
+    "echo -n ${%s}", ymp->ctx, name);
     char* args[] = {"/bin/bash", "-c", command, NULL};
     char* output = strip(getoutput(args));
     debug("variable: %s -> %s\n", name, output);
@@ -30,7 +30,7 @@ visible char** ympbuild_get_array(ympbuild* ymp, const char* name){
     char* command = build_string(
     "exec <&-\n"
     "{\n%s\n} &>/dev/null\n"
-    "echo ${%s[@]}", ymp->ctx, name);
+    "echo -n ${%s[@]}", ymp->ctx, name);
     char* args[] = {"/bin/bash", "-c", command, NULL};
     char* output = strip(getoutput(args));
     debug("variable: %s -> %s\n", name, output);
