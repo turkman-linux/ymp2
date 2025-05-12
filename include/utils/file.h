@@ -131,5 +131,27 @@ char** find(const char* path);
  */
 char* getoutput(char* argv[]);
 
+/**
+ * @brief Copies a file from the source path to the destination path.
+ *
+ * This function attempts to copy the contents of the file specified by
+ * the `sourceFile` parameter to the file specified by the `destFile`
+ * parameter. If the destination file already exists, it will be overwritten.
+ *
+ * @param sourceFile The path to the source file to be copied.
+ * @param destFile The path to the destination file where the source file
+ *                 will be copied.
+ *
+ * @return true if the file was copied successfully, false otherwise.
+ *
+ * @note This function does not handle directory copying. It only copies
+ *       files. Ensure that the source file exists and is accessible,
+ *       and that the destination path is writable.
+ *
+ * @warning If the destination file already exists, it will be overwritten
+ *          without any confirmation.
+ */
+bool copyFile(const char *sourceFile, const char *destFile);
+
 
 #endif

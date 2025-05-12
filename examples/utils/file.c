@@ -75,5 +75,15 @@ int main() {
     char* args[] = {"/bin/cat", "/etc/os-release", NULL};
     char* out = getoutput(args);
     printf("%s\n", out);
+    
+    const char *source = file_path;
+    const char *destination = "destination.txt";
+
+    if (copyFile(source, destination)) {
+        printf("File copied successfully from %s to %s\n", source, destination);
+    } else {
+        printf("Failed to copy file from %s to %s\n", source, destination);
+    }
+
     return 0;
 }

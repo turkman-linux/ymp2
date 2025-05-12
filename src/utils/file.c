@@ -10,6 +10,7 @@
 #include <limits.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include <utils/array.h>
 #include <utils/string.h>
@@ -193,3 +194,42 @@ visible char* getoutput(char* argv[]) {
     }
 }
 
+
+
+visible bool copyFile(const char *sourceFile, const char *destFile) {
+    debug("Copy file: %s -> %s", sourceFile, destFile);
+    int source, dest;
+    char buffer[1024*1024]; // Buffer to hold data (1mb)
+    ssize_t bytesRead;
+
+    // Open the source file in read-only mode
+    source = open(sourceFile, O_RDONLY);
+    if (source < 0) {
+        perror("Error opening source file");
+        return false;
+    }
+
+    // Open the destination file in write-only mode, create it if it doesn't exist
+    dest = open(destFile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (dest < 0) {
+        perror("Error opening destination file");
+        close(source);
+        return false;
+    }
+
+    // Copy the file content
+    while ((bytesRead = read(source, buffer, sizeof(buffer))) > 0) {
+        ssize_t written = write(dest, buffer, bytesRead);
+        if(written < 0){
+            perror("Error writing file");
+            close(source);
+            close(dest);
+            return false;
+        }
+    }
+
+    // Close the files
+    close(source);
+    close(dest);
+    return true;
+}
