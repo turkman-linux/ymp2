@@ -194,9 +194,7 @@ visible char* getoutput(char* argv[]) {
     }
 }
 
-
-
-visible bool copyFile(const char *sourceFile, const char *destFile) {
+visible bool copy_file(const char *sourceFile, const char *destFile) {
     debug("Copy file: %s -> %s", sourceFile, destFile);
     int source, dest;
     char buffer[1024*1024]; // Buffer to hold data (1mb)
@@ -231,5 +229,57 @@ visible bool copyFile(const char *sourceFile, const char *destFile) {
     // Close the files
     close(source);
     close(dest);
+    return true;
+}
+
+// Function to copy a directory recursively
+visible bool copy_directory(const char *sourceDir, const char *destDir) {
+    struct stat st;
+    if (stat(sourceDir, &st) != 0) {
+        perror("Error accessing source directory");
+        return false;
+    }
+
+    // Create the destination directory
+    if (mkdir(destDir, st.st_mode) != 0) {
+        perror("Error creating destination directory");
+        return false;
+    }
+
+    DIR *dir = opendir(sourceDir);
+    if (dir == NULL) {
+        perror("Error opening source directory");
+        return false;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        // Skip the "." and ".." entries
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char sourcePath[1024];
+        char destPath[1024];
+
+        snprintf(sourcePath, sizeof(sourcePath), "%s/%s", sourceDir, entry->d_name);
+        snprintf(destPath, sizeof(destPath), "%s/%s", destDir, entry->d_name);
+
+        if (entry->d_type == DT_DIR) {
+            // Recursively copy the directory
+            if (!copy_directory(sourcePath, destPath)) {
+                closedir(dir);
+                return false;
+            }
+        } else {
+            // Copy the file
+            if (!copy_file(sourcePath, destPath)) {
+                closedir(dir);
+                return false;
+            }
+        }
+    }
+
+    closedir(dir);
     return true;
 }

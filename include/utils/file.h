@@ -151,7 +151,32 @@ char* getoutput(char* argv[]);
  * @warning If the destination file already exists, it will be overwritten
  *          without any confirmation.
  */
-bool copyFile(const char *sourceFile, const char *destFile);
+bool copy_file(const char *sourceFile, const char *destFile);
+
+
+/**
+ * @brief Copies a directory and its contents from the source path to the destination path.
+ *
+ * This function recursively copies all files and subdirectories from the directory
+ * specified by the `sourceDir` parameter to the directory specified by the `destDir`
+ * parameter. If the destination directory already exists, it will be used as the target
+ * for the copied contents.
+ *
+ * @param sourceDir The path to the source directory to be copied.
+ * @param destDir The path to the destination directory where the source directory
+ *                and its contents will be copied.
+ *
+ * @return true if the directory and its contents were copied successfully, false otherwise.
+ *
+ * @note This function will create the destination directory if it does not already exist.
+ *       It will copy all files and subdirectories, preserving the directory structure.
+ *
+ * @warning If the destination directory already exists, its contents will be overwritten
+ *          without any confirmation. Ensure that you want to overwrite existing files.
+ *
+ * @see copy_file() for the function that handles file copying.
+ */
+bool copy_directory(const char *sourceDir, const char *destDir);
 
 
 #endif

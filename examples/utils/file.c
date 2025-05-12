@@ -79,11 +79,18 @@ int main() {
     const char *source = file_path;
     const char *destination = "destination.txt";
 
-    if (copyFile(source, destination)) {
+    if (copy_file(source, destination)) {
         printf("File copied successfully from %s to %s\n", source, destination);
     } else {
         printf("Failed to copy file from %s to %s\n", source, destination);
     }
 
+    if (copy_directory("example_dir", "example_dir2")) {
+        printf("File copied successfully from %s to %s\n", source, destination);
+    } else {
+        printf("Failed to copy file from %s to %s\n", source, destination);
+    }
+
+    
     return 0;
 }
