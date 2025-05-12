@@ -13,6 +13,8 @@
 #include <core/ymp.h>
 #include <core/variable.h>
 
+#include <config.h>
+
 visible Package* package_new() {
     // Allocate memory for a new Package structure
     Package *pkg = malloc(sizeof(Package));
@@ -124,7 +126,7 @@ visible bool package_extract(Package* pkg) {
     char* destdir = variable_get_value(global->variables, "DESTDIR");
 
     // Build the root filesystem path for quarantine
-    char* rootfs = build_string("%s/%s/quarantine/rootfs", destdir, get_storage());
+    char* rootfs = build_string("%s/%s/quarantine/rootfs", destdir, STORAGE);
     char* metadata_dir = build_string("%s/../metadata", rootfs);
     char* files_dir = build_string("%s/../metadata", rootfs);
     char* links_dir = build_string("%s/../metadata", rootfs);

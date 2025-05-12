@@ -19,12 +19,22 @@ deps = [
 ]
 
 
+configure_file(
+  input: 'include/config.h.in',
+  output: 'config.h',
+  configuration: {
+    'VERSION': meson.project_version(),
+    'DEBUG': get_option('debug') ? '1' : '0',
+    'BUILD_DIR': '/tmp/ymp-build/',
+    'STORAGE': '/var/lib/ymp/',
+  }
+)
+
 foreach src : run_command('find', 'src', '-type', 'f', '-iname', '*.c',check:true).stdout().strip().split('\n')
     srcs += src
 endforeach
 
 subdir('src')
-
 
 start = [meson.current_source_dir()+'/src/start/'+architecture+'.s']
 nostdlib = ['-nostdlib', '-lc']

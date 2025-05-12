@@ -101,6 +101,4 @@ int ymp_run(Ymp* ymp);
 */
 extern Ymp* global;
 
-char* get_storage();
-
 #endif

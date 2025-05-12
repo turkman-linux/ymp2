@@ -1,0 +1,8 @@
+#ifndef _ctx_h
+#define _ctx_h
+
+#define STORAGE "@STORAGE@"
+#define VERSION "@VERSION@"
+#define BUILD_DIR "@BUILD_DIR@"
+#define DEBUG @DEBUG@
+#endif

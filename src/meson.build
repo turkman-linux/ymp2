@@ -28,9 +28,6 @@ configure_file(
   input: 'ctx.c.in',
   output: 'ctx.c',
   configuration: {
-    'VERSION': meson.project_version(),
-    'DEBUG_MODE': get_option('debug') ? '1' : '0',
-    'STORAGE': '/var/lib/ymp/',
     'CTX': ctx_c
   }
 )
