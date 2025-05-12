@@ -24,7 +24,7 @@ char *calculate_hash(int type, const char *path);
  *         memory allocation failure). The caller is responsible for freeing the
  *         returned string.
  */
-char *calculate_sha1(const char *path);
+#define calculate_sha1(path) calculate_hash(SHA1, path);
 
 /**
  * @brief Calculates the MD5 hash of a file.
@@ -40,7 +40,7 @@ char *calculate_sha1(const char *path);
  *         memory allocation failure). The caller is responsible for freeing the
  *         returned string.
  */
-char *calculate_md5(const char *path);
+#define calculate_md5(path) calculate_hash(MD5, path);
 
 /**
  * @brief Calculates the SHA-256 hash of a file.
@@ -56,7 +56,7 @@ char *calculate_md5(const char *path);
  *         memory allocation failure). The caller is responsible for freeing the
  *         returned string.
  */
-char *calculate_sha256(const char *path);
+#define calculate_sha256(path) calculate_hash(SHA256, path);
 
 /**
  * @brief Calculates the SHA-512 hash of a file.
@@ -72,6 +72,6 @@ char *calculate_sha256(const char *path);
  *         memory allocation failure). The caller is responsible for freeing the
  *         returned string.
  */
-char *calculate_sha512(const char *path);
+#define calculate_sha512(path) calculate_hash(SHA512, path);
 
 #endif

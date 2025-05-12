@@ -58,16 +58,3 @@ visible char *calculate_hash(int type, const char *path) {
 
     return strdup(hashstring);
 }
-visible char *calculate_sha1(const char *path) {
-    return calculate_hash(SHA1, path);
-}
-
-visible char *calculate_md5(const char *path) {
-    return calculate_hash(MD5, path);
-}
-visible char *calculate_sha256(const char *path) {
-    return calculate_hash(SHA256, path);
-}
-visible char *calculate_sha512(const char *path) {
-    return calculate_hash(SHA512, path);
-}
