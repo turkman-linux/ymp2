@@ -3,7 +3,9 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/utsname.h>
 #include <libgen.h>
+#include <errno.h>
 
 #include <core/ymp.h>
 #include <core/logger.h>
@@ -168,6 +170,18 @@ static void generate_links_files(const char* path){
     array_unref(links);
 }
 static char* metadata_vars[] = {"name", "version", "description", "release", NULL};
+static char* source_arrs[] = {"depends", "makedepends", "arch", "provides", "replaces", "source", NULL};
+
+
+static char* getArch() {
+    struct utsname buffer;
+    errno = 0;
+    if (uname(&buffer) < 0) {
+        perror("uname");
+    }
+    return strdup(buffer.machine);
+}
+
 static void generate_metadata(ympbuild *ymp, bool is_source) {
     array *a = array_new();
     array_add(a, "ymp:\n");
@@ -176,9 +190,25 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
     } else {
         array_add(a, "  package:\n");
     }
+    // Common variables
     for(size_t i=0; metadata_vars[i]; i++) {
         array_add(a, build_string("    %s: %s\n",metadata_vars[i], ympbuild_get_value(ymp, metadata_vars[i])));
     }
+    // Source arrays
+    for(size_t i=0; is_source && source_arrs[i]; i++) {
+        char** items = ympbuild_get_array(ymp, source_arrs[i]);
+        if(items[0] && strlen(items[0]) > 0){
+            array_add(a, build_string("    %s:\n", source_arrs[i]));
+            for(size_t j=0; items[j]; j++) {
+                array_add(a, build_string("      - %s\n", items[j]));
+            }
+        }
+    }
+    // Package arrays
+    if(!is_source){
+        array_add(a, build_string("    arch: %s\n", getArch()));
+    }
+
     char* ret = array_get_string(a);
     array_unref(a);
     writefile(build_string("%s/metadata.yaml", ymp->path), ret);
