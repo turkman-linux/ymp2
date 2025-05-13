@@ -78,23 +78,23 @@ static char* hash_types[] = {"sha512sums", "sha256sums", "sha1sums", "md5sums", 
 
 static bool get_resource(const char* resource_path, const char* resource_name, size_t resource_type, const char* source_url, const char* expected_hash) {
     debug("Source: %s %s\n", source_url, expected_hash);
-    
+
     // Get the file name from the source URL
     char* source_file_name = basename((char*)source_url);
-    
+
     // Construct the target cache directory path
     char* cache_directory = build_string("%s/cache/%s", BUILD_DIR, resource_name);
     char* target_file_path = build_string("%s/%s", cache_directory, source_file_name);
-    
+
     bool operation_status = true;
-    
+
     // Check if the target file already exists
     if (!isfile(target_file_path)) {
         // Download or Copy the resource
         create_dir(cache_directory);
-        
+
         char* local_file_path = build_string("%s/%s", resource_path, source_url);
-        
+
         if (isfile(local_file_path)) {
             free(target_file_path);
             target_file_path = build_string("%s/%s", cache_directory, source_file_name);
@@ -102,24 +102,24 @@ static bool get_resource(const char* resource_path, const char* resource_name, s
         } else {
             operation_status = fetch(source_url, target_file_path);
         }
-        
+
         free(local_file_path);
     }
-    
+
     // Check the hash of the downloaded or copied file
     char* actual_hash = calculate_hash(resource_type, target_file_path);
-    
+
     if (iseq((char*)expected_hash, "SKIP")) {
         warning("Hash control disabled for: %s\n", source_file_name);
     } else if (!iseq(actual_hash, (char*)expected_hash)) {
         print("Archive hash is invalid:\n  -> Expected: %s\n  -> Received: %s\n", expected_hash, actual_hash);
         return false;
     }
-    
+
     // Cleanup
     free(cache_directory);
     free(target_file_path);
-    
+
     return operation_status;
 }
 
@@ -166,6 +166,22 @@ static void generate_links_files(const char* path){
     free(files_path);
     array_unref(files);
     array_unref(links);
+}
+static char* metadata_vars[] = {"name", "version", "description", "release", NULL};
+static void generate_metadata(ympbuild *ymp, bool is_source) {
+    array *a = array_new();
+    array_add(a, "ymp:\n");
+    if(is_source){
+        array_add(a, "  source:\n");
+    } else {
+        array_add(a, "  package:\n");
+    }
+    for(size_t i=0; metadata_vars[i]; i++) {
+        array_add(a, build_string("    %s: %s\n",metadata_vars[i], ympbuild_get_value(ymp, metadata_vars[i])));
+    }
+    char* ret = array_get_string(a);
+    array_unref(a);
+    writefile(build_string("%s/metadata.yaml", ymp->path), ret);
 }
 
 visible bool build_from_path(const char* path){
@@ -235,8 +251,10 @@ visible bool build_from_path(const char* path){
     }
     // Generate links file
     generate_links_files(ymp->path);
+    generate_metadata(ymp, false);
     (void)name; (void)deps;
     // Cleanup
     free(ympfile);
     return true;
 }
+
