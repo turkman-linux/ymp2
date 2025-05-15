@@ -117,6 +117,8 @@ char** find(const char* path);
  *             the last element must be NULL to indicate the end of the array.
  *             Example: {"ls", "-l", NULL}.
  *
+ * @param flags Unshare flags
+ *
  * @return A pointer to a dynamically allocated string containing the output
  *         of the command. If the command fails to execute or if there is
  *         an error in creating the pipe or forking the process, the function
@@ -129,7 +131,8 @@ char** find(const char* path);
  * @warning This function does not handle commands that require user input
  *          or commands that may block indefinitely.
  */
-char* getoutput(char* argv[]);
+char* getoutput_unshare(char* argv[], int flags);
+#define getoutput(A) getoutput_unshare(A, 0)
 
 /**
  * @brief Copies a file from the source path to the destination path.

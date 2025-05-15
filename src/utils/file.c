@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/stat.h>
@@ -12,6 +13,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include <sched.h>
 
 #include <utils/array.h>
 #include <utils/string.h>
@@ -151,7 +153,7 @@ visible void writefile(const char* path, const char* data) {
 
     fclose(file);
 }
-visible char* getoutput(char* argv[]) {
+visible char* getoutput_unshare(char* argv[], int flags) {
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         perror("pipe");
@@ -165,14 +167,18 @@ visible char* getoutput(char* argv[]) {
     if (pid == 0) { // Child process
         // Close the read end of the pipe
         close(pipefd[0]);
-        
+
         // Redirect stdout to the write end of the pipe
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]); // Close the original write end
 
+        // unshare flags
+        if(unshare(flags) < 0){
+            exit(EXIT_FAILURE);
+        }
         // Execute the command
         execvp(argv[0], argv);
-        
+
         // If execvp returns, it must have failed
         perror("execvp");
         exit(EXIT_FAILURE);

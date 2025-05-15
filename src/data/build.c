@@ -21,13 +21,15 @@
 #include <data/build.h>
 #include <config.h>
 
+#define UNSHARE_FLAGS (CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWNET)
+
 visible char* ympbuild_get_value(ympbuild* ymp, const char* name) {
     char* command = build_string(
     "exec <&-\n"
     "{\n%s\n} &>/dev/null\n"
     "echo -n ${%s}", ymp->ctx, name);
     char* args[] = {"/bin/bash", "-c", command, NULL};
-    char* output = strip(getoutput(args));
+    char* output = strip(getoutput_unshare(args, UNSHARE_FLAGS | CLONE_NEWPID));
     debug("variable: %s -> %s\n", name, output);
     free(command);
     return output;
@@ -39,7 +41,7 @@ visible char** ympbuild_get_array(ympbuild* ymp, const char* name){
     "{\n%s\n} &>/dev/null\n"
     "echo -n ${%s[@]}", ymp->ctx, name);
     char* args[] = {"/bin/bash", "-c", command, NULL};
-    char* output = strip(getoutput(args));
+    char* output = strip(getoutput_unshare(args, UNSHARE_FLAGS | CLONE_NEWPID));
     debug("variable: %s -> %s\n", name, output);
     free(command);
     return split(output," ");
@@ -67,7 +69,7 @@ visible int ympbuild_run_function(ympbuild* ymp, const char* name) {
             build_string("HOME=%s", ymp->path),
             NULL
         };
-        if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWNET) < 0) {
+        if (unshare(UNSHARE_FLAGS) < 0) {
             exit(1);
         }
         if(sethostname("sandbox",7) < 0){
