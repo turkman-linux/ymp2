@@ -129,9 +129,6 @@ static bool get_resource(const char* resource_path, const char* resource_name, s
 static char* actions[] = {"prepare", "setup", "build", "package", NULL};
 
 static void configure_header(ympbuild *ymp) {
-    if(!global){
-        return;
-    }
     ymp->header = str_replace(ymp->header, "@buildpath@", ymp->path);
     ymp->header = str_replace(ymp->header, "@CC@", variable_get_value(global->variables, "build:cc"));
     ymp->header = str_replace(ymp->header, "@CXX@", variable_get_value(global->variables, "build:cxx"));
@@ -140,6 +137,21 @@ static void configure_header(ympbuild *ymp) {
     ymp->header = str_replace(ymp->header, "@LDFLAGS@", variable_get_value(global->variables, "build:ldflags"));
     ymp->header = str_replace(ymp->header, "@APIKEY@", variable_get_value(global->variables, "build:token"));
     ymp->header = str_replace(ymp->header, "@DISTRODIR@", DISTRODIR);
+    char* uses = variable_get_value(global->variables, "build:use");
+    char** flag;
+    if(strlen(uses) > 0){
+        flag = split(uses, " ");
+    } else {
+        flag = malloc(sizeof(char*)*2);
+        flag[0] = "all";
+        flag[1] = NULL;
+    }
+    for(size_t i=0; flag[i];i++){
+        char* new_header = build_string("%s\ndeclare -r use_%s=31\n", ymp->header, flag[i]);
+        free(ymp->header);
+        ymp->header = new_header;
+    }
+    free(flag);
 }
 
 static void generate_links_files(const char* path){
@@ -207,6 +219,27 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
     // Package arrays
     if(!is_source){
         array_add(a, build_string("    arch: %s\n", getArch()));
+    } else {
+        // Use flags
+        char** flags = ympbuild_get_array(ymp, "uses");
+        if(flags[0]){
+            array_add(a, "    use-flags:\n");
+        }
+        for(size_t i=0; flags[i]; i++){
+            array_add(a, build_string("      - %s:\n", flags[i]));
+            free(flags[i]);
+        }
+        for(size_t i=0; flags[i]; i++){
+            array_add(a, build_string("    %s-depends:\n"));
+            char** deps = ympbuild_get_array(ymp, build_string("%s_depends", flags[i]));
+            for(size_t j=0; deps[j]; j++){
+                array_add(a, build_string("      - %s:\n", deps[j]));
+                free(deps[j]);
+            }
+            free(deps);
+            free(flags[i]);
+        }
+        free(flags);
     }
 
     char* ret = array_get_string(a);
@@ -215,6 +248,10 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
 }
 
 visible bool build_from_path(const char* path){
+    if(!global){
+        print("Error: ymp global missing!\n");
+        return false;
+    }
     char* ympfile = build_string("%s/ympbuild",path);
     if(!isfile(ympfile)){
         free(ympfile);
