@@ -229,7 +229,7 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
             array_add(a, build_string("      - %s:\n", flags[i]));
         }
         for(size_t i=0; flags[i] && strlen(flags[0]) > 0; i++){
-            array_add(a, build_string("    %s-depends:\n"));
+            array_add(a, build_string("    %s-depends:\n", flags[i]));
             char** deps = ympbuild_get_array(ymp, build_string("%s_depends", flags[i]));
             for(size_t j=0; deps[j]; j++){
                 array_add(a, build_string("      - %s:\n", deps[j]));
