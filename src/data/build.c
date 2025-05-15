@@ -256,7 +256,6 @@ visible bool build_from_path(const char* path){
         free(ympfile);
         return false;
     }
-    // configure header
     ympbuild *ymp = malloc(sizeof(ympbuild));
     ymp->ctx = readfile(ympfile);
     ymp->header = readfile(":/ympbuild-header.sh");
@@ -265,14 +264,15 @@ visible bool build_from_path(const char* path){
     char* version = ympbuild_get_value(ymp, "version");
     char* src_cache = build_string("%s/cache/%s-%s/",BUILD_DIR, name, version);
     create_dir(src_cache);
-    // configure header and generate source metadata
+    // Generate source metadata
     ymp->path = src_cache;
-    configure_header(ymp);
     generate_metadata(ymp, true);
     // Create build path
     ymp->path = calculate_md5(ympfile);
     ymp->path = build_string("%s/%s", BUILD_DIR, ymp->path);
     create_dir(ymp->path);
+    // Configure header
+    configure_header(ymp);
     // detect hash
     char** hashs = NULL;
     size_t hash_type = 0;
