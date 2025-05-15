@@ -129,6 +129,7 @@ static bool get_resource(const char* resource_path, const char* resource_name, s
 static char* actions[] = {"prepare", "setup", "build", "package", NULL};
 
 static void configure_header(ympbuild *ymp) {
+    ymp->header = readfile(":/ympbuild-header.sh");
     ymp->header = str_replace(ymp->header, "@buildpath@", ymp->path);
     ymp->header = str_replace(ymp->header, "@CC@", variable_get_value(global->variables, "build:cc"));
     ymp->header = str_replace(ymp->header, "@CXX@", variable_get_value(global->variables, "build:cxx"));
@@ -246,19 +247,18 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
     writefile(build_string("%s/metadata.yaml", ymp->path), ret);
 }
 
-visible bool build_from_path(const char* path){
+visible char* build_source_from_path(const char* path){
     if(!global){
         print("Error: ymp global missing!\n");
-        return false;
+        return NULL;
     }
     char* ympfile = build_string("%s/ympbuild",path);
     if(!isfile(ympfile)){
         free(ympfile);
-        return false;
+        return NULL;
     }
     ympbuild *ymp = malloc(sizeof(ympbuild));
     ymp->ctx = readfile(ympfile);
-    ymp->header = readfile(":/ympbuild-header.sh");
     // define variables
     char* name = ympbuild_get_value(ymp, "name");
     char* version = ympbuild_get_value(ymp, "version");
@@ -267,12 +267,6 @@ visible bool build_from_path(const char* path){
     // Generate source metadata
     ymp->path = src_cache;
     generate_metadata(ymp, true);
-    // Create build path
-    ymp->path = calculate_md5(ympfile);
-    ymp->path = build_string("%s/%s", BUILD_DIR, ymp->path);
-    create_dir(ymp->path);
-    // Configure header
-    configure_header(ymp);
     // detect hash
     char** hashs = NULL;
     size_t hash_type = 0;
@@ -294,18 +288,43 @@ visible bool build_from_path(const char* path){
     char** sources = ympbuild_get_array(ymp, "source");
     for(size_t i=0; sources[i] && hashs[i]; i++){
         if(!get_resource(path, build_string("%s-%s", name, version), hash_type, sources[i], hashs[i])){
-            return false;
+            return NULL;
         }
     }
-    char** src_files = find(src_cache);
+    free(ymp->ctx);
+    free(ymp);
+    return src_cache;
+
+}
+
+visible char *build_binary_from_path(const char* path){
+    if(!global){
+        print("Error: ymp global missing!\n");
+        return NULL;
+    }
+    char* ympfile = build_string("%s/ympbuild",path);
+    if(!isfile(ympfile)){
+        free(ympfile);
+        return NULL;
+    }
+    ympbuild *ymp = malloc(sizeof(ympbuild));
+    ymp->ctx = readfile(ympfile);
+    // Create build path
+    ymp->path = calculate_md5(ympfile);
+    ymp->path = build_string("%s/%s", BUILD_DIR, ymp->path);
+    create_dir(ymp->path);
+    // Configure header
+    configure_header(ymp);
+    char** src_files = find(path);
     Archive *a = archive_new();
     for(size_t i=0; src_files[i];i++){
+        debug("Copy / Extract %s\n",src_files[i]);
         if(archive_is_archive(a, src_files[i])){
             archive_load(a, src_files[i]);
             archive_set_target(a, ymp->path);
             archive_extract_all(a);
         } else {
-            char* src_name = src_files[i]+strlen(src_cache);
+            char* src_name = src_files[i]+strlen(path);
             char* target_path = build_string("%s/%s", ymp->path, src_name);
             copy_file(src_files[i], target_path);
             free(target_path);
@@ -316,14 +335,23 @@ visible bool build_from_path(const char* path){
         status = ympbuild_run_function(ymp, actions[i]);
         if(status != 0){
             free(ympfile);
-            return false;
+            return NULL;
         }
     }
     // Generate links file
     generate_links_files(ymp->path);
     generate_metadata(ymp, false);
+    char* ret = strdup(ymp->path);
     // Cleanup
+    free(ymp);
     free(ympfile);
-    return true;
+    return ret;
 }
 
+visible bool build_from_path(const char* path){
+    char* cache = build_source_from_path(path);
+    print("Source created at: %s\n", cache);
+    char* build = build_binary_from_path(cache);
+    print("Binary created at: %s\n", build);
+    return (build != NULL && cache != NULL);
+}

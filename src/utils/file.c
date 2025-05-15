@@ -118,8 +118,9 @@ static void find_operation(array* array, const char* path){
         char* inode = build_string("%s/%s", path, inodes[i]);
         if(isdir(inode)){
             find_operation(array, inode);
+        } else {
+            array_add(array, inode);
         }
-        array_add(array, inode);
         i++;
     }
 }
