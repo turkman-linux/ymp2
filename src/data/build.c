@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,7 @@
 #include <sys/utsname.h>
 #include <libgen.h>
 #include <errno.h>
+#include <sched.h>
 
 #include <core/ymp.h>
 #include <core/logger.h>
@@ -65,6 +67,12 @@ visible int ympbuild_run_function(ympbuild* ymp, const char* name) {
             build_string("HOME=%s", ymp->path),
             NULL
         };
+        if (unshare(CLONE_NEWUTS | CLONE_NEWUSER | CLONE_NEWNET) < 0) {
+            exit(1);
+        }
+        if(sethostname("sandbox",7) < 0){
+            exit(1);
+        }
         execve(args[0], args, envs);
         free(command);
         return -1;
