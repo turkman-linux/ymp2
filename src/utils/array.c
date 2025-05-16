@@ -39,7 +39,7 @@ visible void array_add(array *arr, const char *value) {
     pthread_mutex_unlock(&arr->lock);
 }
 
-visible void array_set(array *arr, char** new_data, size_t len){
+visible void array_set(array *arr, char** new_data){
     pthread_mutex_lock(&arr->lock);
     arr->data = calloc(arr->capacity, sizeof(char*));
     arr->size = 0;
@@ -49,7 +49,7 @@ visible void array_set(array *arr, char** new_data, size_t len){
             arr->data[start] = NULL;
     }
     pthread_mutex_unlock(&arr->lock);
-    array_adds(arr, new_data, len);
+    array_adds(arr, new_data);
 }
 
 visible char* array_get_string(array *arr){
@@ -74,9 +74,8 @@ visible char* array_get_string(array *arr){
     return ret;
 }
 
-visible void array_adds(array *arr, char **value, size_t len) {
-    size_t i;
-    for(i=0;i<len;i++){
+visible void array_adds(array *arr, char **value) {
+    for(size_t i=0;value[i];i++){
         array_add(arr, value[i]);
     }
 }

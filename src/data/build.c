@@ -138,6 +138,19 @@ static bool get_resource(const char* resource_path, const char* resource_name, s
 
 static char* actions[] = {"prepare", "setup", "build", "package", NULL};
 
+static char** get_uses(){
+    char* uses = variable_get_value(global->variables, "build:use");
+    char** flag;
+    if(strlen(uses) > 0){
+        flag = split(uses, " ");
+    } else {
+        flag = malloc(sizeof(char*)*2);
+        flag[0] = "all";
+        flag[1] = NULL;
+    }
+    return flag;
+}
+
 static void configure_header(ympbuild *ymp) {
     ymp->header = readfile(":/ympbuild-header.sh");
     ymp->header = str_replace(ymp->header, "@buildpath@", ymp->path);
@@ -148,15 +161,7 @@ static void configure_header(ympbuild *ymp) {
     ymp->header = str_replace(ymp->header, "@LDFLAGS@", variable_get_value(global->variables, "build:ldflags"));
     ymp->header = str_replace(ymp->header, "@APIKEY@", variable_get_value(global->variables, "build:token"));
     ymp->header = str_replace(ymp->header, "@DISTRODIR@", DISTRODIR);
-    char* uses = variable_get_value(global->variables, "build:use");
-    char** flag;
-    if(strlen(uses) > 0){
-        flag = split(uses, " ");
-    } else {
-        flag = malloc(sizeof(char*)*2);
-        flag[0] = "all";
-        flag[1] = NULL;
-    }
+    char** flag = get_uses();
     for(size_t i=0; flag[i];i++){
         char* new_header = build_string("%s\ndeclare -r use_%s=31\n", ymp->header, flag[i]);
         free(ymp->header);
@@ -195,7 +200,6 @@ static void generate_links_files(const char* path){
 static char* metadata_vars[] = {"name", "version", "description", "release", NULL};
 static char* source_arrs[] = {"depends", "makedepends", "arch", "provides", "replaces", "source", NULL};
 
-
 static char* getArch() {
     struct utsname buffer;
     errno = 0;
@@ -217,29 +221,49 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
     for(size_t i=0; metadata_vars[i]; i++) {
         array_add(a, build_string("    %s: %s\n",metadata_vars[i], ympbuild_get_value(ymp, metadata_vars[i])));
     }
-    // Source arrays
-    for(size_t i=0; is_source && source_arrs[i]; i++) {
-        char** items = ympbuild_get_array(ymp, source_arrs[i]);
-        if(items[0] && strlen(items[0]) > 0){
-            array_add(a, build_string("    %s:\n", source_arrs[i]));
-            for(size_t j=0; items[j]; j++) {
-                array_add(a, build_string("      - %s\n", items[j]));
-            }
-        }
-    }
     // Package arrays
     if(!is_source){
         array_add(a, build_string("    arch: %s\n", getArch()));
+        // Dependencies
+        array *deps = array_new();
+        array_adds(deps, ympbuild_get_array(ymp, "depends"));
+        char** flag = get_uses();
+        for(size_t i=0; flag[i]; i++) {
+            array_adds(deps, ympbuild_get_array(ymp, build_string("%s_depends", flag[i])));
+        }
+        array_add(a, "    depends:\n");
+        size_t len = 0;
+        char** depends = array_get(deps, &len);
+        for(size_t i=0; depends[i] && strlen(depends[i]) > 0; i++){
+            array_add(a, build_string("      - %s\n", depends[i]));
+        }
+        free(depends);
+        free(flag);
     } else {
+        // Source arrays
+        for(size_t i=0; source_arrs[i]; i++) {
+            char** items = ympbuild_get_array(ymp, source_arrs[i]);
+            if(items[0] && strlen(items[0]) > 0){
+                array_add(a, build_string("    %s:\n", source_arrs[i]));
+                for(size_t j=0; items[j]; j++) {
+                    array_add(a, build_string("      - %s\n", items[j]));
+                }
+            }
+        }
         // Use flags
-        char** flags = ympbuild_get_array(ymp, "uses");
+        array *uses = array_new();
+        array_adds(uses, ympbuild_get_array(ymp, "uses"));
+        array_adds(uses, ympbuild_get_array(ymp, "uses_extra"));
+        size_t len = 0;
+        char** flags = array_get(uses, &len);
         if(strlen(flags[0]) > 0){
             array_add(a, "    use-flags:\n");
         }
-        for(size_t i=0; flags[i] && strlen(flags[0]) > 0; i++){
+        for(size_t i=0; flags[i] && strlen(flags[i]) > 0; i++){
             array_add(a, build_string("      - %s:\n", flags[i]));
         }
-        for(size_t i=0; flags[i] && strlen(flags[0]) > 0; i++){
+        // Use flag dependencies
+        for(size_t i=0; flags[i] && strlen(flags[i]) > 0; i++){
             array_add(a, build_string("    %s-depends:\n", flags[i]));
             char** deps = ympbuild_get_array(ymp, build_string("%s_depends", flags[i]));
             for(size_t j=0; deps[j]; j++){
@@ -250,6 +274,7 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
             free(flags[i]);
         }
         free(flags);
+        array_unref(uses);
     }
 
     char* ret = array_get_string(a);

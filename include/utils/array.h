@@ -51,9 +51,8 @@ void array_add(array *arr, const char* data);
  *
  * @param arr Pointer to the dynamic array.
  * @param data Pointer to the array of strings to add.
- * @param len The number of strings to add.
  */
-void array_adds(array *arr, char** data, size_t len);
+void array_adds(array *arr, char** data);
 
 /**
  * @brief Set the contents of the dynamic array.
@@ -62,9 +61,8 @@ void array_adds(array *arr, char** data, size_t len);
  *
  * @param arr Pointer to the dynamic array.
  * @param new_data Pointer to the new array of strings.
- * @param len The number of strings in the new data.
  */
-void array_set(array *arr, char** new_data, size_t len);
+void array_set(array *arr, char** new_data);
 
 /**
  * @brief Get the contents of the dynamic array.
@@ -72,7 +70,7 @@ void array_set(array *arr, char** new_data, size_t len);
  * This function retrieves the current contents of the array.
  *
  * @param arr Pointer to the dynamic array.
- * @param len Pointer to a variable to store the length of the array.
+ * @param len Length of dynamic array.
  * @return Pointer to the array of strings.
  */
 char **array_get(array *arr, size_t* len);
