@@ -4,6 +4,9 @@
 
 #include <utils/array.h>
 #include <utils/error.h>
+#include <core/ymp.h>
+
+extern Ymp* global;
 
 visible void error_fn(array* error, int status){
     if(!error){
@@ -23,12 +26,20 @@ visible void error_fn(array* error, int status){
     }
     array_clear(error);
 }
+visible void error(int status){
+    error_fn(global->errors, status);
+}
 
-visible void error_add_fn(array* error, char* message) {
+
+visible void error_add_fn(array* error, const char* message) {
     if(!error){
         return;
     }
     array_add(error, message);
+}
+
+visible void error_add(const char* message) {
+    error_add_fn(global->errors, message);
 }
 
 visible bool has_error_fn(array* error){
@@ -36,4 +47,8 @@ visible bool has_error_fn(array* error){
         return false;
     }
     return array_length(error) > 0;
+}
+
+visible bool has_error(){
+    return has_error_fn(global->errors);
 }

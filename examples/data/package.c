@@ -6,7 +6,7 @@
 #include <data/package.h>
 
 int main(int argc, char** argv){
-    global = ymp_init();
+    Ymp* ymp = ymp_init();
     // Create a package
     Package *pkg = package_new();
     pkg->name = "foo";
@@ -22,9 +22,9 @@ int main(int argc, char** argv){
         path = argv[1];
     }
     package_load_from_file(pkg2, path);
-    error(0);
+    error_fn(ymp->errors, 0);
     printf("%s\n", pkg2->metadata);
-    variable_set_value(global->variables, "DESTDIR","./");
+    variable_set_value(ymp->variables, "DESTDIR","./");
     package_extract(pkg2);
     return 0;
 }

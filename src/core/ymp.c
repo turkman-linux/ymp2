@@ -19,7 +19,7 @@ typedef struct {
     size_t capacity;
 } YmpPrivate;
 
-visible Ymp* global;
+Ymp* global;
 
 visible Ymp* ymp_init(){
     // Allocate memory for Ymp instance

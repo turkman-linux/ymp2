@@ -15,7 +15,7 @@
  * @param status The error status code to be reported.
  */
 void error_fn(array* error, int status);
-#define error(A) error_fn(global->errors, A)
+void error(int status);
 
 /**
  * @brief Adds an error message to the error array.
@@ -26,8 +26,8 @@ void error_fn(array* error, int status);
  * @param error Pointer to an array that holds error information.
  * @param message The error message to be added to the error array.
  */
-void error_add_fn(array* error, char* message);
-#define error_add(A) error_add_fn(global->errors, A)
+void error_add_fn(array* error, const char* message);
+void error_add(const char* message);
 
 /**
  * @brief Checks if there are any errors in the error array.
@@ -39,5 +39,5 @@ void error_add_fn(array* error, char* message);
  * @return true if there are errors in the array, false otherwise.
  */
 bool has_error_fn(array* error);
-#define has_error() has_error_fn(global->errors)
+bool has_error();
 

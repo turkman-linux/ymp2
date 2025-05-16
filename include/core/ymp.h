@@ -99,6 +99,5 @@ int ymp_run(Ymp* ymp);
 /**
 * @brief Global Ymp struct.
 */
-extern Ymp* global;
 void load_plugin(const char* path);
 #endif
