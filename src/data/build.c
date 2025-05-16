@@ -138,17 +138,26 @@ static bool get_resource(const char* resource_path, const char* resource_name, s
 
 static char* actions[] = {"prepare", "setup", "build", "package", NULL};
 
-static char** get_uses(){
+static char** get_uses(ympbuild *ymp){
     char* uses = variable_get_value(global->variables, "build:use");
-    char** flag;
+    array *flag = array_new();
     if(strlen(uses) > 0){
-        flag = split(uses, " ");
+        array_adds(flag, split(uses, " "));
     } else {
-        flag = malloc(sizeof(char*)*2);
-        flag[0] = "all";
-        flag[1] = NULL;
+        array_add(flag, "all");
     }
-    return flag;
+    if(array_has(flag, "all")){
+        array_remove(flag, "all");
+        array_adds(flag, ympbuild_get_array(ymp, "uses"));
+    }
+    if(array_has(flag, "extra")){
+        array_remove(flag, "extra");
+        array_adds(flag, ympbuild_get_array(ymp, "uses_extra"));
+    }
+    size_t len=0;
+    char** ret = array_get(flag, &len);
+    array_unref(flag);
+    return ret;
 }
 
 static void configure_header(ympbuild *ymp) {
@@ -161,7 +170,7 @@ static void configure_header(ympbuild *ymp) {
     ymp->header = str_replace(ymp->header, "@LDFLAGS@", variable_get_value(global->variables, "build:ldflags"));
     ymp->header = str_replace(ymp->header, "@APIKEY@", variable_get_value(global->variables, "build:token"));
     ymp->header = str_replace(ymp->header, "@DISTRODIR@", DISTRODIR);
-    char** flag = get_uses();
+    char** flag = get_uses(ymp);
     for(size_t i=0; flag[i];i++){
         char* new_header = build_string("%s\ndeclare -r use_%s=31\n", ymp->header, flag[i]);
         free(ymp->header);
@@ -227,7 +236,7 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
         // Dependencies
         array *deps = array_new();
         array_adds(deps, ympbuild_get_array(ymp, "depends"));
-        char** flag = get_uses();
+        char** flag = get_uses(ymp);
         for(size_t i=0; flag[i]; i++) {
             array_adds(deps, ympbuild_get_array(ymp, build_string("%s_depends", flag[i])));
         }
@@ -267,7 +276,7 @@ static void generate_metadata(ympbuild *ymp, bool is_source) {
             array_add(a, build_string("    %s-depends:\n", flags[i]));
             char** deps = ympbuild_get_array(ymp, build_string("%s_depends", flags[i]));
             for(size_t j=0; deps[j]; j++){
-                array_add(a, build_string("      - %s:\n", deps[j]));
+                array_add(a, build_string("      - %s\n", deps[j]));
                 free(deps[j]);
             }
             free(deps);
