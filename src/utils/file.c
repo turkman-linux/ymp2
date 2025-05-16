@@ -342,3 +342,4 @@ visible char* sreadlink(const char* path) {
     buf[len] = '\0'; // Null-terminate the string
     return buf; // Return the dynamically allocated string
 }
+
