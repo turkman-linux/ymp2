@@ -578,6 +578,65 @@ visible char* create_package(const char* path) {
         // Free the archive object and the list of files
         free(a);
         free(files);
+    } else if (yaml_has_area(metadata, "package")) {
+        // Create a new archive object for packaging files
+        Archive *a = archive_new(); 
+
+        // Load the specified TAR.GZ package file into the archive object
+        archive_load(a, build_string("%s/data.tar.gz", path)); 
+
+        // Set the archive type to TAR with GZIP compression
+        archive_set_type(a, "tar", "gzip"); 
+
+        // Change the current working directory to the 'output' directory
+        if (chdir("output") < 0) {
+            print("Failed to change directory to 'output'\n");
+            return NULL; // Return NULL if changing the directory fails
+        }
+
+        // Retrieve a list of all files in the specified path
+        char** files = find(".");
+
+        // Iterate through the list of files and add each one to the archive
+        for (size_t i = 0; files[i]; i++) {
+            // Add each file to the archive, adjusting the path to exclude the base directory
+            archive_add(a, files[i] + strlen(path) + 1);
+        }
+
+        // Create the archive with the added files
+        archive_create(a);
+
+        // Free the memory
+        free(files);
+        free(a);
+
+        // Change the current working directory back to the original specified path
+        if (chdir(path) < 0) {
+            print("Failed to change directory back to '%s'\n", path);
+            return NULL; // Return NULL if changing the directory fails
+        }
+
+        // Create a new archive object for the final package
+        a = archive_new(); 
+
+        // Load the previously created package file into the new archive object
+        archive_load(a, ret); 
+
+        // Set the archive type to ZIP with no compression
+        archive_set_type(a, "zip", "none"); 
+
+        // Add necessary files to the ZIP archive
+        archive_add(a, "metadata.yaml"); // Add metadata file
+        archive_add(a, "files");          // Add directory containing files
+        archive_add(a, "links");          // Add directory containing links
+        archive_add(a, "data.tar.gz");    // Add the previously created TAR.GZ file
+
+        // Create the final ZIP archive with the added files
+        archive_create(a);
+
+        // Free the archive object after use
+        free(a);
+
     }
     
     // Change back to the original directory

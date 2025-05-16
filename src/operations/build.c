@@ -15,7 +15,10 @@ static int build(void** args) {
         }
         char* pkg = create_package(cache);
         debug("Output package %s\n",pkg);
+        char* build = build_binary_from_path(cache);
+        create_package(build);
         free(cache);
+        free(build);
     }
     return 0;
 }
