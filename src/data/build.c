@@ -186,9 +186,10 @@ static void generate_links_files(const char* path){
     array *links = array_new();
     for(size_t i=0; inodes[i]; i++){
         if(issymlink(inodes[i])){
-            printf("%s\n", inodes[i]);
+            debug("add symlink: %s\n", inodes[i]);
             array_add(links, build_string("%s %s\n",sreadlink(inodes[i]), inodes[i]+strlen(rootfs)+1));
         } else if(isfile(inodes[i])){
+            debug("add file: %s\n", inodes[i]);
             char* hash = calculate_sha1(inodes[i]);
             array_add(files, build_string("%s %s\n", hash, inodes[i]+strlen(rootfs)+1));
             free(hash);

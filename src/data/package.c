@@ -1,9 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <data/package.h>
+#include <data/build.h>
+
 #include <utils/archive.h>
 #include <utils/yaml.h>
-
 #include <utils/error.h>
 #include <utils/string.h>
 #include <utils/file.h>
@@ -89,24 +91,6 @@ visible void package_load_from_file(Package* pkg, const char* path) {
     pkg->dependencies = yaml_get_array(pkg->metadata, "dependencies", &dep_count);
 }
 
-static bool package_build(Package* pkg, const char* rootfs){
-    // Create build directory
-    char* md5 = calculate_md5(pkg->archive->archive_path);
-    char* build_dir = build_string("/tmp/ymp-build/%s", md5);
-    debug("Package build: %s (%s)\n", pkg->name, build_dir);
-    create_dir(build_dir);
-    // Extract archive files
-    archive_set_target(pkg->archive, build_dir);
-    archive_extract_all(pkg->archive);
-    // Build package from source
-    (void)rootfs;
-    // Cleanup
-    free(md5);
-    free(build_dir);
-    return true;
-}
-
-
 // Function to extract a package
 visible bool package_extract(Package* pkg) {
     // Check if the package pointer is NULL
@@ -133,7 +117,14 @@ visible bool package_extract(Package* pkg) {
 
     // If package is source, build instead of extract
     if(pkg->is_source){
-        return package_build(pkg, rootfs);
+        // Extract source package to the cache
+        char* cache = build_string("%s/cache/%s-%s", BUILD_DIR, pkg->name, pkg->version);
+        archive_set_target(pkg->archive, cache);
+        archive_extract_all(pkg->archive);
+        // Build source package
+        char* build = build_binary_from_path(cache);
+        printf("%s\n", build);
+        return true;
     }
 
     // Build a temporary directory path for extraction
