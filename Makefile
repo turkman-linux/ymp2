@@ -6,7 +6,7 @@ build:
 	ninja -C build
 
 test:
-	@mkdir build/test ; \
+	@mkdir -p build/test ; \
 	for example in $(wildcard build/examples/*) ; do \
 	    if [ -f $$example ] ; then \
 	        echo Testing: $$example ; \

@@ -36,6 +36,9 @@ visible Ymp* ymp_init(){
     queue->item = malloc(sizeof(OperationJob));
     ymp->priv_data = (void*) queue;
     ctx_init(ymp->manager); // Load from ctx
+    if(global == NULL) {
+        global = ymp;
+    }
     return ymp; // Return the pointer to the newly created instance
 }
 

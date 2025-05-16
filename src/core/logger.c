@@ -10,9 +10,32 @@
 
 typedef int (*logger)(const char*, ...);
 
+
 static logger print_functions[] = {(logger)vprintf, NULL, (logger)vprintf, NULL};
 
+static char* colorize_fn(int color, const char* message){
+    if(!isatty(fileno(stdout))){
+        return strdup(message);
+    }
+    return build_string("\x1b[;%dm%s\x1b[;0m", color, message);
+}
+
+static char* colorize_dummy(int color, const char* message){
+    (void)color;
+    return strdup(message);
+}
+
+Colorize colorize = (Colorize)colorize_fn;
+
+
 visible void logger_set_status(int type, bool status){
+    if(type == COLORIZE){
+        if(status){
+            colorize = (Colorize)colorize_fn;
+        } else {
+            colorize = (Colorize)colorize_dummy;
+        }
+    }
     if(type > (int)(sizeof(print_functions) / sizeof(logger))){
         return;
     }
@@ -23,13 +46,6 @@ visible void logger_set_status(int type, bool status){
     }
 }
 
-visible char* colorize(int color, const char* message){
-    if(!isatty(fileno(stdout))){
-        return strdup(message);
-    }
-    return build_string("\x1b[;%dm%s\x1b[;0m", color, message);
-}
-
 visible int print_fn(const char* caller, int type, const char* format, ...){
     if(print_functions[type] == NULL){
         return 0;
@@ -38,7 +54,7 @@ visible int print_fn(const char* caller, int type, const char* format, ...){
     va_list args;
     va_start(args, format);
     if(type == DEBUG){
-        char* msg = colorize(BLUE,caller);
+        char* msg = colorize(BLUE, (char*)caller);
         printf("[%s]:", msg);
         free(msg);
     }

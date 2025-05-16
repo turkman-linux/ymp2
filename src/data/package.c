@@ -36,7 +36,7 @@ visible void package_load_from_file(Package* pkg, const char* path) {
     debug("Package load from file: %s\n", path);
     // Check if the specified path is a valid file
     if(!isfile(path)){
-        error_add(pkg->errors, build_string("Failed to load package archive %s", path));
+        error_add(build_string("Failed to load package archive %s", path));
         return; // Exit if the file does not exist
     }
 
@@ -46,7 +46,7 @@ visible void package_load_from_file(Package* pkg, const char* path) {
     // Read the metadata from the archive
     pkg->metadata = archive_readfile(pkg->archive, "metadata.yaml");
     if(pkg->metadata == NULL) {
-        error_add(pkg->errors, "Failed to load metadata");
+        error_add("Failed to load metadata");
         return; // Exit if metadata loading fails
     }
 
@@ -64,21 +64,21 @@ visible void package_load_from_file(Package* pkg, const char* path) {
         pkg->is_source = false; // Mark package as a regular package
         pkg->metadata = yaml_get_area(pkg->metadata, "package"); // Get the "package" area
     } else {
-        error_add(pkg->errors, "Metadata is invalid"); // Handle invalid metadata
+        error_add("Metadata is invalid"); // Handle invalid metadata
     }
 
     if(!pkg->is_source){
         // 3. Read the list of files from the archive
         pkg->files = archive_readfile(pkg->archive, "files");
         if(pkg->files == NULL) {
-            error_add(pkg->errors, "Failed to load file list"); // Handle failure to load file list
+            error_add("Failed to load file list"); // Handle failure to load file list
             return; // Exit if file list loading fails
         }
 
         // Read the list of symlinks from the archive
         pkg->links = archive_readfile(pkg->archive, "links");
         if(pkg->links == NULL) {
-            error_add(pkg->errors, "Failed to load link list"); // Handle failure to load link list
+            error_add("Failed to load link list"); // Handle failure to load link list
             return; // Exit if link list loading fails
         }
     }

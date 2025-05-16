@@ -139,25 +139,46 @@ static bool get_resource(const char* resource_path, const char* resource_name, s
 
 static char* actions[] = {"prepare", "setup", "build", "package", NULL};
 
-static char** get_uses(ympbuild *ymp){
+static char** get_uses(ympbuild *ymp) {
+    // Retrieve the value of the "build:use" variable from the global variable store
     char* uses = variable_get_value(global->variables, "build:use");
+
+    // Create a new array to hold the uses
     array *flag = array_new();
-    if(strlen(uses) > 0){
+
+    // Check if the retrieved uses string is not empty
+    if (strlen(uses) > 0) {
+        // Split the uses string by spaces and add the resulting tokens to the flag array
         array_adds(flag, split(uses, " "));
     } else {
+        // If the uses string is empty, add "all" to the flag array
         array_add(flag, "all");
     }
-    if(array_has(flag, "all")){
+
+    // Check if the flag array contains "all"
+    if (array_has(flag, "all")) {
+        // Remove "all" from the flag array
         array_remove(flag, "all");
+        // Add the standard uses from the ympbuild structure to the flag array
         array_adds(flag, ympbuild_get_array(ymp, "uses"));
     }
-    if(array_has(flag, "extra")){
+
+    // Check if the flag array contains "extra"
+    if (array_has(flag, "extra")) {
+        // Remove "extra" from the flag array
         array_remove(flag, "extra");
+        // Add the extra uses from the ympbuild structure to the flag array
         array_adds(flag, ympbuild_get_array(ymp, "uses_extra"));
     }
-    size_t len=0;
+
+    // Get the contents of the flag array as a char** and retrieve its length
+    size_t len = 0;
     char** ret = array_get(flag, &len);
+
+    // Unreference the flag array to manage memory
     array_unref(flag);
+
+    // Return the array of uses
     return ret;
 }
 
@@ -180,34 +201,56 @@ static void configure_header(ympbuild *ymp) {
     free(flag);
 }
 
-static void generate_links_files(const char* path){
+static void generate_links_files(const char* path) {
+    // Construct the root filesystem path by appending "/output" to the provided path
     char* rootfs = build_string("%s/output", path);
+
+    // Find all inodes (files and symlinks) in the root filesystem
     char** inodes = find(rootfs);
+
+    // Create new arrays to hold file and symlink information
     array *files = array_new();
     array *links = array_new();
-    for(size_t i=0; inodes[i]; i++){
-        if(issymlink(inodes[i])){
+
+    // Iterate through the inodes to process each one
+    for (size_t i = 0; inodes[i]; i++) {
+        // Check if the current inode is a symlink
+        if (issymlink(inodes[i])) {
             debug("add symlink: %s\n", inodes[i]);
-            array_add(links, build_string("%s %s\n",sreadlink(inodes[i]), inodes[i]+strlen(rootfs)+1));
-        } else if(isfile(inodes[i])){
+            // Add the symlink information to the links array
+            array_add(links, build_string("%s %s\n", sreadlink(inodes[i]), inodes[i] + strlen(rootfs)));
+        }
+        // Check if the current inode is a regular file
+        else if (isfile(inodes[i])) {
             debug("add file: %s\n", inodes[i]);
+            // Calculate the SHA1 hash of the file
             char* hash = calculate_sha1(inodes[i]);
-            array_add(files, build_string("%s %s\n", hash, inodes[i]+strlen(rootfs)+1));
+            // Add the file hash and path to the files array
+            array_add(files, build_string("%s %s\n", hash, inodes[i] + strlen(rootfs) + 1));
+            // Free the memory allocated for the hash
             free(hash);
         }
+        // Free the memory allocated for the current inode
         free(inodes[i]);
     }
+
+    // Construct paths for the output files
     char* files_path = build_string("%s/files", path);
     char* links_path = build_string("%s/links", path);
+
+    // Write the contents of the files and links arrays to their respective files
     writefile(files_path, array_get_string(files));
     writefile(links_path, array_get_string(links));
-    // cleanup
+
+    // Cleanup: free allocated memory and unreference arrays
     free(inodes);
     free(links_path);
     free(files_path);
     array_unref(files);
     array_unref(links);
 }
+
+
 static char* metadata_vars[] = {"name", "version", "description", "release", NULL};
 static char* source_arrs[] = {"depends", "makedepends", "arch", "provides", "replaces", "source", NULL};
 
@@ -221,221 +264,327 @@ static char* getArch() {
 }
 
 static void generate_metadata(ympbuild *ymp, bool is_source) {
+    // Create a new array to hold the metadata lines
     array *a = array_new();
+    
+    // Add the initial "ymp:" line to the metadata
     array_add(a, "ymp:\n");
-    if(is_source){
+    
+    // Add either "source:" or "package:" based on the is_source flag
+    if (is_source) {
         array_add(a, "  source:\n");
     } else {
         array_add(a, "  package:\n");
     }
-    // Common variables
-    for(size_t i=0; metadata_vars[i]; i++) {
-        array_add(a, build_string("    %s: %s\n",metadata_vars[i], ympbuild_get_value(ymp, metadata_vars[i])));
+    
+    // Add common metadata variables
+    for (size_t i = 0; metadata_vars[i]; i++) {
+        array_add(a, build_string("    %s: %s\n", metadata_vars[i], ympbuild_get_value(ymp, metadata_vars[i])));
     }
-    // Package arrays
-    if(!is_source){
+    
+    // If not a source, add package-specific metadata
+    if (!is_source) {
         array_add(a, build_string("    arch: %s\n", getArch()));
-        // Dependencies
+        
+        // Create an array to hold dependencies
         array *deps = array_new();
         array_adds(deps, ympbuild_get_array(ymp, "depends"));
+        
+        // Get the use flags and add their dependencies
         char** flag = get_uses(ymp);
-        for(size_t i=0; flag[i]; i++) {
+        for (size_t i = 0; flag[i]; i++) {
             array_adds(deps, ympbuild_get_array(ymp, build_string("%s_depends", flag[i])));
         }
+        
+        // Add the dependencies section to the metadata
         array_add(a, "    depends:\n");
         size_t len = 0;
         char** depends = array_get(deps, &len);
-        for(size_t i=0; depends[i] && strlen(depends[i]) > 0; i++){
+        for (size_t i = 0; depends[i] && strlen(depends[i]) > 0; i++) {
             array_add(a, build_string("      - %s\n", depends[i]));
         }
+        
+        // Free allocated memory for dependencies and flags
         free(depends);
         free(flag);
     } else {
-        // Source arrays
-        for(size_t i=0; source_arrs[i]; i++) {
+        // If it's a source, add source-specific metadata
+        for (size_t i = 0; source_arrs[i]; i++) {
             char** items = ympbuild_get_array(ymp, source_arrs[i]);
-            if(items[0] && strlen(items[0]) > 0){
+            if (items[0] && strlen(items[0]) > 0) {
                 array_add(a, build_string("    %s:\n", source_arrs[i]));
-                for(size_t j=0; items[j]; j++) {
+                for (size_t j = 0; items[j]; j++) {
                     array_add(a, build_string("      - %s\n", items[j]));
                 }
             }
         }
-        // Use flags
+        
+        // Add use flags
         array *uses = array_new();
         array_adds(uses, ympbuild_get_array(ymp, "uses"));
         array_adds(uses, ympbuild_get_array(ymp, "uses_extra"));
+        
         size_t len = 0;
         char** flags = array_get(uses, &len);
-        if(strlen(flags[0]) > 0){
+        if (strlen(flags[0]) > 0) {
             array_add(a, "    use-flags:\n");
         }
-        for(size_t i=0; flags[i] && strlen(flags[i]) > 0; i++){
+        for (size_t i = 0; flags[i] && strlen(flags[i]) > 0; i++) {
             array_add(a, build_string("      - %s:\n", flags[i]));
         }
-        // Use flag dependencies
-        for(size_t i=0; flags[i] && strlen(flags[i]) > 0; i++){
+        
+        // Add dependencies for each use flag
+        for (size_t i = 0; flags[i] && strlen(flags[i]) > 0; i++) {
             array_add(a, build_string("    %s-depends:\n", flags[i]));
             char** deps = ympbuild_get_array(ymp, build_string("%s_depends", flags[i]));
-            for(size_t j=0; deps[j]; j++){
+            for (size_t j = 0; deps[j]; j++) {
                 array_add(a, build_string("      - %s\n", deps[j]));
-                free(deps[j]);
+                free(deps[j]); // Free each dependency string
             }
-            free(deps);
-            free(flags[i]);
+            free(deps); // Free the array of dependencies
+            free(flags[i]); // Free each flag string
         }
-        free(flags);
-        array_unref(uses);
+        free(flags); // Free the array of flags
+        array_unref(uses); // Unreference the uses array
     }
 
+    // Convert the array to a string and write it to the metadata file
     char* ret = array_get_string(a);
-    array_unref(a);
-    writefile(build_string("%s/metadata.yaml", ymp->path), ret);
+    array_unref(a); // Unreference the metadata array
+    writefile(build_string("%s/metadata.yaml", ymp->path), ret); // Write to the specified file
 }
 
-visible char* build_source_from_path(const char* path){
-    if(!global){
+
+visible char* build_source_from_path(const char* path) {
+    // Check if the global context is initialized
+    if (!global) {
         print("Error: ymp global missing!\n");
-        return NULL;
+        return NULL; // Return NULL if global context is missing
     }
-    char* ympfile = build_string("%s/ympbuild",path);
-    if(!isfile(ympfile)){
-        free(ympfile);
-        return NULL;
+    
+    // Construct the path to the ympbuild file
+    char* ympfile = build_string("%s/ympbuild", path);
+    
+    // Check if the ympbuild file exists
+    if (!isfile(ympfile)) {
+        free(ympfile); // Free the allocated string if the file does not exist
+        return NULL; // Return NULL if the file is not found
     }
+    
+    // Allocate memory for a new ympbuild structure
     ympbuild *ymp = malloc(sizeof(ympbuild));
+    
+    // Read the contents of the ympbuild file into the context
     ymp->ctx = readfile(ympfile);
-    // define variables
+    
+    // Define variables for name and version from the ympbuild context
     char* name = ympbuild_get_value(ymp, "name");
     char* version = ympbuild_get_value(ymp, "version");
-    char* src_cache = build_string("%s/cache/%s-%s/",BUILD_DIR, name, version);
-    create_dir(src_cache);
+    
+    // Create a source cache directory path based on name and version
+    char* src_cache = build_string("%s/cache/%s-%s/", BUILD_DIR, name, version);
+    create_dir(src_cache); // Create the directory for the source cache
+    
     // Generate source metadata
     ymp->path = src_cache;
     generate_metadata(ymp, true);
-    // detect hash
+    
+    // Detect hash type
     char** hashs = NULL;
     size_t hash_type = 0;
-    for(hash_type=0; hash_types[hash_type]; hash_type++){
+    for (hash_type = 0; hash_types[hash_type]; hash_type++) {
         hashs = ympbuild_get_array(ymp, hash_types[hash_type]);
-        if(strlen(hashs[0]) > 0){
-            break;
+        if (strlen(hashs[0]) > 0) {
+            break; // Break if a valid hash is found
         }
-        if(hash_type > 1){
-            warning("Weak hash algorithm (%s) detected!.\n", hash_types[hash_type]);
-        }
-        free(hashs);
+        free(hashs); // Free the hash array if not used
     }
-    // copy ympbuild file
-    char* target = build_string("%s/ympbuild",src_cache);
-    copy_file(ympfile, target);
-    free(target);
-    // copy resources
+    
+    // Copy the ympbuild file to the source cache
+    char* target = build_string("%s/ympbuild", src_cache);
+    copy_file(ympfile, target); // Copy the file to the target location
+    free(target); // Free the target path string
+    
+    // Copy resources based on the source array and hash
     char** sources = ympbuild_get_array(ymp, "source");
-    for(size_t i=0; sources[i] && hashs[i]; i++){
-        if(!get_resource(path, build_string("%s-%s", name, version), hash_type, sources[i], hashs[i])){
-            return NULL;
+    for (size_t i = 0; sources[i] && hashs[i]; i++) {
+        // Get the resource and check for success
+        if (!get_resource(path, build_string("%s-%s", name, version), hash_type, sources[i], hashs[i])) {
+            return NULL; // Return NULL if resource retrieval fails
         }
     }
+    
+    // Free allocated resources
     free(ymp->ctx);
     free(ymp);
+    
+    // Return the path of the source cache
     return src_cache;
-
 }
 
-visible char *build_binary_from_path(const char* path){
-    if(!global){
+visible char *build_binary_from_path(const char* path) {
+    // Check if the global context is initialized
+    if (!global) {
         print("Error: ymp global missing!\n");
-        return NULL;
+        return NULL; // Return NULL if global context is missing
     }
-    char* ympfile = build_string("%s/ympbuild",path);
-    if(!isfile(ympfile)){
-        free(ympfile);
-        return NULL;
+    
+    // Construct the path to the ympbuild file
+    char* ympfile = build_string("%s/ympbuild", path);
+    
+    // Check if the ympbuild file exists
+    if (!isfile(ympfile)) {
+        free(ympfile); // Free the allocated string if the file does not exist
+        return NULL; // Return NULL if the file is not found
     }
+    
+    // Allocate memory for a new ympbuild structure
     ympbuild *ymp = malloc(sizeof(ympbuild));
+    
+    // Read the contents of the ympbuild file into the context
     ymp->ctx = readfile(ympfile);
-    // Create build path
+    
+    // Create a build path based on the MD5 hash of the ympfile
     ymp->path = calculate_md5(ympfile);
     ymp->path = build_string("%s/%s", BUILD_DIR, ymp->path);
+    
+    // Create the directory for the build path
     create_dir(ymp->path);
-    // Configure header
+    
+    // Configure the header for the build
     configure_header(ymp);
+    
+    // Find source files in the specified path
     char** src_files = find(path);
+    
+    // Create a new archive object
     Archive *a = archive_new();
-    for(size_t i=0; src_files[i];i++){
-        debug("Copy / Extract %s\n",src_files[i]);
-        if(archive_is_archive(a, src_files[i])){
+    
+    // Iterate through the source files
+    for (size_t i = 0; src_files[i]; i++) {
+        debug("Copy / Extract %s\n", src_files[i]);
+        
+        // Check if the current source file is an archive
+        if (archive_is_archive(a, src_files[i])) {
+            // Load the archive and set the target path for extraction
             archive_load(a, src_files[i]);
             archive_set_target(a, ymp->path);
-            archive_extract_all(a);
+            archive_extract_all(a); // Extract all contents of the archive
         } else {
-            char* src_name = src_files[i]+strlen(path);
+            // If it's a regular file, copy it to the build path
+            char* src_name = src_files[i] + strlen(path); // Get the relative path
             char* target_path = build_string("%s/%s", ymp->path, src_name);
-            copy_file(src_files[i], target_path);
-            free(target_path);
+            copy_file(src_files[i], target_path); // Copy the file
+            free(target_path); // Free the target path string
         }
     }
+    
+    // Execute actions defined in the actions array
     int status = 0;
-    for(size_t i=0; actions[i]; i++){
+    for (size_t i = 0; actions[i]; i++) {
         status = ympbuild_run_function(ymp, actions[i]);
-        if(status != 0){
-            free(ympfile);
-            return NULL;
+        if (status != 0) {
+            free(ympfile); // Free the ympfile string on error
+            return NULL; // Return NULL if any action fails
         }
     }
-    // Generate links file
+    
+    // Generate links and metadata files for the build
     generate_links_files(ymp->path);
     generate_metadata(ymp, false);
+    
+    // Duplicate the build path string to return
     char* ret = strdup(ymp->path);
-    // Cleanup
+    
+    // Cleanup: free allocated resources
     free(ymp);
     free(ympfile);
+    
+    // Return the path of the built binary
     return ret;
 }
 
-visible bool build_from_path(const char* path){
+
+visible bool build_from_path(const char* path) {
+    // Create the source from the specified path
     char* cache = build_source_from_path(path);
-    print("Source created at: %s\n", cache);
+    print("Source created at: %s\n", cache); // Print the location of the created source
+    
+    if (cache != NULL) {
+        return NULL;
+    }
+    // Build the binary from the created source
     char* build = build_binary_from_path(cache);
-    print("Binary created at: %s\n", build);
+    print("Binary created at: %s\n", build); // Print the location of the created binary
+    
+    // Return true if both the binary and cache are successfully created, otherwise false
     return (build != NULL && cache != NULL);
 }
 
-visible char* create_package(const char* path){
+
+visible char* create_package(const char* path) {
+    // Get the current working directory
     char* curdir = pwd();
+    
+    // Construct the path for the metadata file and the output package
     char* metadata_file = build_string("%s/metadata.yaml", path);
     char* ret = build_string("%s/package.zip", path);
+    
+    // Read the contents of the metadata file
     char* metadata = readfile(metadata_file);
-    if(!isfile(metadata_file)){
+    
+    // Check if the metadata file exists
+    if (!isfile(metadata_file)) {
         print("Failed to find %s\n", metadata_file);
-        return NULL;
+        return NULL; // Return NULL if the file is not found
     }
+    
+    // Free the metadata file path string
     free(metadata_file);
-    if(chdir(path) < 0){
+    
+    // Change the current directory to the specified path
+    if (chdir(path) < 0) {
         print("Failed to change directory\n");
-        return NULL;
+        return NULL; // Return NULL if changing directory fails
     }
-    if(!yaml_has_area(metadata, "ymp")){
+    
+    // Check if the metadata is valid and contains the "ymp" area
+    if (!yaml_has_area(metadata, "ymp")) {
         print("Invalid metadata\n");
-        return NULL;
+        return NULL; // Return NULL if the metadata is invalid
     }
+    
+    // Get the "ymp" area from the metadata
     metadata = yaml_get_area(metadata, "ymp");
-    if(yaml_has_area(metadata, "source")){
-        Archive *a = archive_new();
-        archive_load(a, ret);
-        archive_set_type(a, "zip", "none");
+    
+    // If the "source" area exists in the metadata, create a package
+    if (yaml_has_area(metadata, "source")) {
+        Archive *a = archive_new(); // Create a new archive object
+        archive_load(a, ret); // Load the package file
+        archive_set_type(a, "zip", "none"); // Set the archive type to ZIP
+        
+        // Find all files in the specified path
         char** files = find(path);
-        for(size_t i=0; files[i]; i++){
-            archive_add(a, files[i]+strlen(path)+1);
+        for (size_t i = 0; files[i]; i++) {
+            // Add each file to the archive, adjusting the path
+            archive_add(a, files[i] + strlen(path) + 1);
         }
+        
+        // Create the archive
         archive_create(a);
+        
+        // Free the archive object and the list of files
         free(a);
         free(files);
     }
-    if(chdir(curdir) < 0){
+    
+    // Change back to the original directory
+    if (chdir(curdir) < 0) {
         print("Failed to change directory\n");
-        return NULL;
+        return NULL; // Return NULL if changing back fails
     }
+    
+    // Return the path of the created package
     return ret;
 }
+

@@ -9,13 +9,13 @@ int main() {
     array* error_array = array_new(); // Assuming array_create initializes an empty array
 
     // Simulate error handling
-    error_add(error_array, "Failed to complete some_operation.");
-    error_add(error_array, "Failed to complete another_operation.");
+    error_add_fn(error_array, "Failed to complete some_operation.");
+    error_add_fn(error_array, "Failed to complete another_operation.");
 
     // Check if there are any errors
-    if (has_error(error_array)) {
+    if (has_error_fn(error_array)) {
         // Report errors and exit with a status code
-        error(error_array, 0);
+        error_fn(error_array, 0);
     }
 
     // Clean up

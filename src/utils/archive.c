@@ -37,7 +37,7 @@ static void archive_load_archive(Archive *data) {
     archive_read_support_format_all(data->archive);
     if (archive_read_open_filename(data->archive, data->archive_path, 10240) != ARCHIVE_OK) {
         char* error_msg = build_string("Failed to open archive: %s", archive_error_string(data->archive));
-        error_add(data->errors, error_msg);
+        error_add(error_msg);
     }
 }
 
@@ -88,7 +88,7 @@ static void archive_extract_fn(Archive *data, const char *path, bool all) {
         const char *entry_path = archive_entry_pathname(entry);
         char *target_file = NULL;
         if(data->target_path == NULL){
-            error(data->errors, 3);
+            error(3);
         }
         if(strlen(entry_path) == 0){
             continue;
@@ -123,8 +123,8 @@ static void archive_extract_fn(Archive *data, const char *path, bool all) {
             if (link_target != NULL) {
                 if (symlink(link_target, target_file) != 0) {
                     char* error_msg = build_string("Failed to create symbolic link: %s -> %s", target_file, link_target);
-                    error_add(data->errors, error_msg);
-                    error(data->errors, 3);
+                    error_add(error_msg);
+                    error(3);
                 }
                 continue;
             }
@@ -132,8 +132,8 @@ static void archive_extract_fn(Archive *data, const char *path, bool all) {
             FILE *file = fopen(target_file, "wb");
             if (file == NULL) {
                 char* error_msg = build_string("Failed to open file for writing: %s", target_file);
-                error_add(data->errors, error_msg);
-                error(data->errors, 3);
+                error_add(error_msg);
+                error(3);
             }
             char buffer[4096];
             ssize_t size;
@@ -171,13 +171,13 @@ visible char* archive_readfile(Archive *data, const char *file_path) {
         ret = (char *)malloc(size + 1);
         if (ret == NULL) {
            char* error_msg = build_string("Memory allocation failed");
-           error_add(data->errors, error_msg);
+           error_add(error_msg);
         }
         ssize_t bytes_read = archive_read_data(data->archive, ret, size);
         if (bytes_read < 0) {
            char* error_msg = build_string("Failed to read file: %s", archive_error_string(data->archive));
            free(ret);
-           error_add(data->errors, error_msg);
+           error_add(error_msg);
         }
         ret[bytes_read] = '\0';
         break;
@@ -242,7 +242,7 @@ visible void archive_write(Archive *data, const char *outname, char **filename) 
       e = (archive_write_set_format_zip(a) != ARCHIVE_OK);
   }
   if (e){
-      error_add(data->errors, "Libarchive error!");
+      error_add("Libarchive error!");
       return;
   }
 
@@ -274,7 +274,7 @@ visible void archive_write(Archive *data, const char *outname, char **filename) 
         char link[PATH_MAX];
         len = readlink(*filename,link,sizeof(link));
         if(len < 0){
-            error_add(data->errors, "Failed to create archive");
+            error_add("Failed to create archive");
             break;
         }
         link[len] = '\0';
@@ -289,10 +289,10 @@ visible void archive_write(Archive *data, const char *outname, char **filename) 
      } else {
         /* unknown */
         archive_entry_set_filetype(entry, AE_IFREG);
-        error_add(data->errors, "Failed to create archive");
+        error_add("Failed to create archive");
     }
-    if(has_error(data->errors)){
-        error(data->errors, 2);
+    if(has_error()){
+        error(2);
     }
     archive_entry_set_perm(entry, 0644);
     archive_write_header(a, entry);

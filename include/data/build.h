@@ -70,9 +70,44 @@ char** ympbuild_get_array(ympbuild* ymp, const char* name);
  */
 bool build_from_path(const char* path);
 
+/**
+ * @brief Builds a source representation from the given file path.
+ *
+ * This function takes a file path as input and constructs a source representation
+ * based on the contents of the file located at that path. The source representation
+ * is returned as a dynamically allocated string.
+ *
+ * @param path The path to the source file.
+ * @return A pointer to a dynamically allocated string containing the source representation,
+ *         or NULL if an error occurs (e.g., if the file does not exist or cannot be read).
+ */
 char *build_source_from_path(const char* path);
+
+/**
+ * @brief Builds a binary representation from the given file path.
+ *
+ * This function takes a file path as input and constructs a binary representation
+ * based on the contents of the file located at that path. The binary representation
+ * is returned as a dynamically allocated string.
+ *
+ * @param path The path to the binary file.
+ * @return A pointer to a dynamically allocated string containing the binary representation,
+ *         or NULL if an error occurs (e.g., if the file does not exist or cannot be read).
+ */
 char *build_binary_from_path(const char* path);
+
+/**
+ * @brief Creates a package from the given file path.
+ *
+ * This function takes a file path as input and creates a package based on the contents
+ * of the file located at that path. The package is returned as a dynamically allocated string.
+ *
+ * @param path The path to the file to be packaged.
+ * @return A pointer to a dynamically allocated string containing the package,
+ *         or NULL if an error occurs (e.g., if the file does not exist or cannot be processed).
+ */
 char *create_package(const char* path);
+
 
 /**
  * @brief Executes a specified function within the YMP build context.

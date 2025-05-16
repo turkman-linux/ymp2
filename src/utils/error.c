@@ -5,7 +5,10 @@
 #include <utils/array.h>
 #include <utils/error.h>
 
-visible void error(array* error, int status){
+visible void error_fn(array* error, int status){
+    if(!error){
+        return;
+    }
     size_t i;
     size_t len = 0;
     char** errs = array_get(error, &len);
@@ -21,14 +24,14 @@ visible void error(array* error, int status){
     array_clear(error);
 }
 
-visible void error_add(array* error, char* message) {
+visible void error_add_fn(array* error, char* message) {
     if(!error){
         return;
     }
     array_add(error, message);
 }
 
-visible bool has_error(array* error){
+visible bool has_error_fn(array* error){
     if(!error){
         return false;
     }

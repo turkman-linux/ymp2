@@ -22,7 +22,7 @@ int main(int argc, char** argv){
         path = argv[1];
     }
     package_load_from_file(pkg2, path);
-    error(pkg2->errors, 0);
+    error(0);
     printf("%s\n", pkg2->metadata);
     variable_set_value(global->variables, "DESTDIR","./");
     package_extract(pkg2);

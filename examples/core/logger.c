@@ -2,8 +2,10 @@
 #include <stdbool.h>
 
 #include <core/logger.h>
+#include <core/ymp.h>
 
 int main() {
+    (void)ymp_init();
     // Set the logging status
     logger_set_status(PRINT, false);  // Disable debug logging
     logger_set_status(DEBUG, true);  // Enable debug logging

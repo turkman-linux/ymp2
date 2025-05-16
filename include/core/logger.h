@@ -29,6 +29,8 @@
  */
 #define INFO 3
 
+#define COLORIZE 4
+
 /**
  * @brief Set the logging status for a specific log type.
  *
@@ -106,6 +108,29 @@ int print_fn(const char* caller, int type, const char* format, ...);
 #define CYAN 36
 #define WHITE 37
 
-char* colorize(int color, const char* message);
+/**
+ * @brief Colorizes a message with the specified color.
+ *
+ * This function takes a color code and a message string as input, and returns
+ * a new string that contains the message formatted with the specified color.
+ * The color codes are based on ANSI escape codes for terminal text coloring.
+ *
+ * @param color The color code to apply to the message. Valid values are:
+ *              - BLACK (30)
+ *              - RED (31)
+ *              - GREEN (32)
+ *              - YELLOW (33)
+ *              - BLUE (34)
+ *              - MAGENTA (35)
+ *              - CYAN (36)
+ *              - WHITE (37)
+ * @param message The message string to be colorized.
+ * @return A pointer to a dynamically allocated string containing the colorized message,
+ *         or NULL if an error occurs (e.g., if memory allocation fails).
+ */
+typedef char* (*Colorize)(int color, const char* message);
+
+extern Colorize colorize;
+
 
 #endif

@@ -4,10 +4,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <core/ymp.h>
 #include <utils/archive.h>
 
 int main() {
 
+    (void)ymp_init();
     // Write some content to the file
     FILE *file = fopen("file1.txt", "w");
     fprintf(file, "This is the content of file1.txt.\n");
