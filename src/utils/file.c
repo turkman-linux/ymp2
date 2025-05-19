@@ -352,3 +352,53 @@ visible char* pwd(){
    }
    return strdup(cwd);
 }
+
+visible	bool remove_path(const char *path, bool verbose) {
+    struct stat st;
+    if (stat(path, &st) != 0) {
+        if (verbose) fprintf(stderr, "Cannot access: %s\n", path);
+        return false;
+    }
+
+    if (S_ISREG(st.st_mode)) {
+        if (remove(path) == 0) {
+            if (verbose) printf("Removed file: %s\n", path);
+            return true;
+        } else {
+            if (verbose) perror(path);
+            return false;
+        }
+    }
+
+    if (S_ISDIR(st.st_mode)) {
+        DIR *dir = opendir(path);
+        if (!dir) {
+            if (verbose) perror(path);
+            return false;
+        }
+
+        struct dirent *e;
+        while ((e = readdir(dir))) {
+            if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, "..")) continue;
+
+            char buf[4096];
+            snprintf(buf, sizeof(buf), "%s/%s", path, e->d_name);
+            if (!remove_path(buf, verbose)) {
+                closedir(dir);
+                return false;
+            }
+        }
+        closedir(dir);
+
+        if (rmdir(path) == 0) {
+            if (verbose) printf("Removed directory: %s\n", path);
+            return true;
+        } else {
+            if (verbose) perror(path);
+            return false;
+        }
+    }
+
+    if (verbose) fprintf(stderr, "Unsupported file type: %s\n", path);
+    return false;
+}
