@@ -212,9 +212,20 @@ char* sreadlink(const char* path);
  *
  * @param path The path to the file where data will be written.
  * @param data The data to be written to the file.
+ *
  */
 
 void writefile(const char* path, const char* data);
+
+/**
+ * @brief Remove file or directory recursivelly
+ *
+ * This function remove a file or directory with sub directories.
+ * @param path The path of target file or directory
+ *
+ * @return true if all files or directories successfully removed.
+ */
+bool remove_all(const char* path);
 
 char* pwd();
 #endif

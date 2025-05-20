@@ -75,7 +75,7 @@ int main() {
     char* args[] = {"/bin/cat", "/etc/os-release", NULL};
     char* out = getoutput(args);
     printf("%s\n", out);
-    
+
     const char *source = file_path;
     const char *destination = "destination.txt";
 
@@ -91,6 +91,14 @@ int main() {
         printf("Failed to copy file from %s to %s\n", source, destination);
     }
 
-    
+    // remove files
+    create_dir("dir1/23");
+    create_dir("dir1/45");
+    writefile("dir1/23/test.txt", "Test123");
+    writefile("dir1/45/test2.txt", "Test123");
+    if(!remove_all("dir1")){
+        return 1;
+    }
+
     return 0;
 }
