@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <core/ymp.h>
 
 #include <data/repository.h>
@@ -23,6 +24,11 @@ int main(int argc, char** argv){
     "    uri: /hello.ymp\n";
     writefile("index.yaml", index);
     repository_load_from_index(repo, "index.yaml");
+
+    Package* pkgs = repo->packages;
+    for(size_t i=0; i< repo->package_count;i++){
+        printf("%s %d\n", pkgs[i].name, pkgs[i].is_source);
+    }
 
     return 0;
 }

@@ -5,6 +5,7 @@
 
 #include <utils/string.h>
 #include <utils/array.h>
+#include <core/logger.h>
 
 #define MAX_LINE_LENGTH 1024
 
@@ -64,7 +65,7 @@ visible char *yaml_get_value(const char *data, const char *name) {
         }
     }
     fclose(stream);
-    return in_value ? value : NULL;
+    return in_value ? strip(value) : NULL;
 }
 
 visible char **yaml_get_array(const char *data, const char *name, int *count) {
@@ -111,25 +112,37 @@ visible char** yaml_get_area_list(const char* fdata, const char* path, int* area
 
     FILE *stream = fmemopen((void *)fdata, strlen(fdata), "r");
     while (fgets(line, sizeof(line), stream)) {
-        if (line[0] != ' ' && strstr(line, ":")) {
-            char* name = strtok(line, ":");
-            // Flush memory to array
-            // Check if we need to resize the array
-            if (*area_count >= max) {
-                max += 32; // Increase size by 32
-                ret = realloc(ret, max * sizeof(char*));
-                if (ret == NULL) {
-                    fprintf(stderr, "Memory allocation failed\n");
-                    return NULL; // Handle allocation failure
+        while(line[strlen(line)-1] == '\n'){
+            line[strlen(line)-1] = '\0';
+        }
+        if(e){
+            if(line[0] != ' ') {
+                // Flush memory to array
+               // Check if we need to resize the array
+                if (*area_count >= max) {
+                    max += 32; // Increase size by 32
+                    ret = realloc(ret, max * sizeof(char*));
+                    if (ret == NULL) {
+                        fprintf(stderr, "Memory allocation failed\n");
+                        return NULL; // Handle allocation failure
+                    }
                 }
+                ret[*area_count] = trim(array_get_string(area));
+                debug("%d %s\n",*area_count, line);
+                (*area_count)++;
+                array_clear(area);
+                e = false;
+            } else if (strlen(line) > 0) {
+                array_add(area,line);
+                array_add(area,"\n");
             }
-            ret[*area_count] = trim(array_get_string(area));
-            (*area_count)++;
-            array_clear(area);
-            e = (strcmp(trim(name), path) == 0);
-        } else if (e && strlen(line) > 0) {
-            array_add(area,line);
-            array_add(area,"\n");
+        } else {
+            if(line[0] == ' ' || !strstr(line, ":")){
+                continue;
+            }
+            char* name = strtok(line, ":");
+            e = (strcmp(name, path) == 0);
+            continue;
         }
     }
 

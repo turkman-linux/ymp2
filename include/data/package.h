@@ -67,6 +67,8 @@ Package* package_new();
  */
 void package_load_from_file(Package* pkg, const char* path);
 
+void package_load_from_metadata(Package* pkg, const char* metadata, bool is_source);
+
 /**
  * @brief Extracts the contents of a package.
  *

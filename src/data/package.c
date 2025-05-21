@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 #include <data/package.h>
@@ -68,8 +69,13 @@ visible void package_load_from_file(Package* pkg, const char* path) {
     } else {
         error_add("Metadata is invalid"); // Handle invalid metadata
     }
+    package_load_from_metadata(pkg, pkg->metadata, pkg->is_source);
+}
 
-    if(!pkg->is_source){
+visible void package_load_from_metadata(Package* pkg, const char* metadata, bool is_source){
+    pkg->is_source = is_source;
+    pkg->metadata = strdup(metadata);
+    if(!pkg->is_source && pkg->files){
         // 3. Read the list of files from the archive
         pkg->files = archive_readfile(pkg->archive, "files");
         if(pkg->files == NULL) {
@@ -91,6 +97,7 @@ visible void package_load_from_file(Package* pkg, const char* path) {
     pkg->release = atoi(yaml_get_value(pkg->metadata, "release"));
     int dep_count = 0;
     pkg->dependencies = yaml_get_array(pkg->metadata, "dependencies", &dep_count);
+
 }
 
 // Function to extract a package
