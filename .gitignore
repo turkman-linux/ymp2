@@ -1,4 +1,5 @@
 build/
 docs/html
 docs/latex
+index.yaml
 *.swp

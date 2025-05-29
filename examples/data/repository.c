@@ -11,6 +11,7 @@
 int main(int argc, char** argv){
     (void) argc; (void)argv;
     Ymp* ymp = ymp_init();
+    (void)ymp;
     
     Repository *repo = repository_new();
     char* index =  "index:\n"
