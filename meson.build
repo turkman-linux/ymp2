@@ -54,9 +54,9 @@ if not get_option('startfiles')
 endif
 
 # Main library
-libymp = library('ymp', srcs, dependencies: deps, c_args: ['-DLIBYMP', '-Dinvisible=extern'], link_args: nostdlib)
+libymp = library('ymp', srcs, dependencies: deps, c_args: ['-DLIBYMP', '-Dinvisible=extern'], link_args: nostdlib, install: true)
 
 subdir('docs')
 subdir('examples')
 
-executable('ymp-cli', ['src/core/cli.c']+start, link_with: libymp, link_args: nostdlib)
+executable('ymp-cli', ['src/core/cli.c']+start, link_with: libymp, link_args: nostdlib, install: true)
