@@ -3,3 +3,8 @@ docs/html
 docs/latex
 index.yaml
 *.swp
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/ymp.substvars
+debian/ymp/
