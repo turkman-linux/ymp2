@@ -1,8 +1,12 @@
 project(
   'ymp', 
   'c',
-  version: '2.0.0'
+  version: run_command(
+          ['bash', '-c', 'head -n 1 debian/changelog | sed "s/.*(//g;s/).*//g"']
+          , check:true
+      ).stdout().strip()
 )
+
 architecture = run_command('uname', '-m', check:true).stdout().strip()
 
 add_project_arguments('-I'+meson.current_source_dir()+'/include', '-pthread',  language: 'c')
@@ -12,8 +16,8 @@ add_project_arguments('-Wall', '-Wextra', '-Werror',  language: 'c')
 add_project_arguments('-Wno-unused-command-line-argument',  language: 'c') # for clang
 
 
-if get_option('debug')
-    add_project_arguments('-DDEBUG',  language: 'c')
+if not get_option('debug')
+    add_project_arguments('-DNDEBUG',  language: 'c')
 endif
 
 srcs = []
@@ -29,7 +33,6 @@ configure_file(
   output: 'config.h',
   configuration: {
     'VERSION': meson.project_version(),
-    'DEBUG': get_option('debug') ? '1' : '0',
     'BUILD_DIR': '/tmp/ymp-build/',
     'DISTRODIR': '/lib/turkman',
     'STORAGE': '/var/lib/ymp/',
