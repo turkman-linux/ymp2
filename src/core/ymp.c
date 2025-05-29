@@ -43,6 +43,9 @@ visible Ymp* ymp_init(){
     if(global == NULL) {
         global = ymp;
     }
+    if(getenv("DEBUG")){
+        logger_set_status(DEBUG, true);
+    }
     return ymp; // Return the pointer to the newly created instance
 }
 

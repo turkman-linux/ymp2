@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <curl/curl.h>
+#include <string.h>
+#include <libgen.h>
 #include <stdbool.h>
 
 #include <core/logger.h>
 #include <utils/fetcher.h>
+#include <utils/file.h>
 #include <utils/string.h>
 
 #include <config.h>
@@ -35,6 +38,12 @@ visible bool fetch(const char* url, const char* path) {
     CURL *curl = curl_easy_init();
     fetch->curl = curl;
     if (fetch->curl) {
+        // Create sub directory if not exists
+        char* dir = strdup(path);
+        dirname(dir);
+        create_dir(dir);
+        free(dir);
+        // write file
         fetch->fp = fopen(path, "wb"); // Open file for writing
         if (fetch->fp == NULL) {
             perror("Failed to open file");

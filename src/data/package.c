@@ -24,6 +24,7 @@ visible Package* package_new() {
 
     // Initialize the archive member of the Package with a new archive
     pkg->archive = archive_new();
+    pkg->is_virtual = false;
 
     // Return the newly created Package instance
     return pkg;
@@ -35,6 +36,9 @@ visible void package_unref(Package *pkg){
 }
 
 visible void package_load_from_file(Package* pkg, const char* path) {
+    if(!pkg){
+        return;
+    }
     debug("Package load from file: %s\n", path);
     // Check if the specified path is a valid file
     if(!isfile(path)){
@@ -72,9 +76,12 @@ visible void package_load_from_file(Package* pkg, const char* path) {
 }
 
 visible void package_load_from_metadata(Package* pkg, const char* metadata, bool is_source){
+    if(!pkg){
+        return;
+    }
     pkg->is_source = is_source;
     pkg->metadata = metadata;
-    if(!pkg->is_source && pkg->files){
+    if(!pkg->is_source && !pkg->is_virtual){
         // 3. Read the list of files from the archive
         pkg->files = archive_readfile(pkg->archive, "files");
         if(pkg->files == NULL) {
@@ -102,7 +109,7 @@ visible void package_load_from_metadata(Package* pkg, const char* metadata, bool
 // Function to extract a package
 visible bool package_extract(Package* pkg) {
     // Check if the package pointer is NULL
-    if(pkg == NULL) {
+    if(!pkg) {
         warning("%s\n", "Invalid package!");
         return false; // Return false if the package is invalid
     }
