@@ -1,0 +1,42 @@
+#include <stdio.h>
+
+#include <core/ymp.h>
+#include <core/variable.h>
+
+#include <data/repository.h>
+
+#include <config.h>
+
+#include <utils/yaml.h>
+#include <utils/string.h>
+#include <utils/file.h>
+
+static void list_available(){
+    char* repodir = build_string("%s/%s/index", get_value("DESTDIR"), STORAGE);
+    char** dirs = listdir(repodir);
+    size_t i=0;
+    Repository *repo;
+    while(dirs[i]){
+        repo = repository_new();
+        repository_load_from_index(repo, dirs[i]);
+        for(size_t i=0; i< repo->package_count;i++){
+            printf("%s %s\n", repo->packages[i]->name, yaml_get_value(repo->packages[i]->metadata, "description"));
+        }
+        repository_unref(repo);
+    }
+
+}
+
+static int list(void** args){
+    (void)args;
+    if (iseq(get_value("available"), "true")){
+        list_available();
+    }
+    return 0;
+}
+void list_init(OperationManager* manager){
+    Operation op;
+    op.name = "list";
+    op.call = (callback)list;
+    operation_register(manager, op);
+}
