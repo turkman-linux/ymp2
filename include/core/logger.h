@@ -1,5 +1,7 @@
 #ifndef _logger_h
 #define _logger_h
+#include <stdbool.h>
+
 /**
  * @file logger.h
  * @brief Logger module for printing messages with different severity levels.

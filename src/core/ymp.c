@@ -21,6 +21,14 @@ typedef struct {
 
 Ymp* global;
 
+static YmpPrivate* queue_init(){
+    YmpPrivate *queue = (YmpPrivate*) malloc(sizeof(YmpPrivate));
+    queue->length = 0;
+    queue->capacity = 0;
+    queue->item = malloc(sizeof(OperationJob));
+    return queue;
+}
+
 visible Ymp* ymp_init(){
     // Allocate memory for Ymp instance
     Ymp* ymp = (Ymp*)malloc(sizeof(Ymp));
@@ -34,11 +42,7 @@ visible Ymp* ymp_init(){
     ymp->variables = variable_manager_new();
     ymp->errors = array_new();
     // Fill private space
-    YmpPrivate *queue = (YmpPrivate*) malloc(sizeof(YmpPrivate));
-    queue->length = 0;
-    queue->capacity = 0;
-    queue->item = malloc(sizeof(OperationJob));
-    ymp->priv_data = (void*) queue;
+    ymp->priv_data = (void*) queue_init();
     ctx_init(ymp->manager); // Load from ctx
     if(global == NULL) {
         global = ymp;
@@ -68,7 +72,6 @@ visible void ymp_add(Ymp* ymp, const char* name, void* args) {
 
 visible int ymp_run(Ymp* ymp){
     YmpPrivate *queue = (YmpPrivate*)ymp->priv_data;
-    global = ymp;
     int rc = 0;
     for(size_t i=0; i< queue->length; i++){
         rc = operation_main(ymp->manager, queue->item[i].name, queue->item[i].args);
@@ -76,7 +79,8 @@ visible int ymp_run(Ymp* ymp){
             break;
         }
     }
-    global = NULL;
+    free(queue);
+    ymp->priv_data = (void*) queue_init();
     return rc;
 }
 visible void load_plugin(Ymp* ymp, const char* path){

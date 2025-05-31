@@ -188,7 +188,7 @@ char** split(const char* data, const char* f);
  *
  * @note The input string is modified in place. Ensure that the string is mutable and not a string literal.
  */
-char* strip(char* str);
+char* strip(const char* str);
 
 #endif // _string_h
 

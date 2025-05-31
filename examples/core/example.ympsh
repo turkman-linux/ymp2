@@ -1,0 +1,11 @@
+set message hello-world
+if eq 1 1
+    print true
+endif
+if eq 1 3
+    print false
+    if print iner
+        print ignore
+    endif
+endif
+get message

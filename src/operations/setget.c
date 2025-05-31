@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <core/ymp.h>
 
+#include <utils/string.h>
+
 static int set_fn(char** args){
     set_value(args[0], args[1]);
     return 0;
@@ -11,6 +13,17 @@ static int get_fn(char** args){
     return 0;
 }
 
+static int eq_fn(char** args){
+    if(iseq(args[0], args[1])){
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+static int dummy_fn(){
+    return 0;
+}
 void setget_init(OperationManager* manager){
     Operation set;
     set.name = "set";
@@ -21,4 +34,14 @@ void setget_init(OperationManager* manager){
     get.name = "get";
     get.call = (callback) get_fn;
     operation_register(manager, get);
+
+    Operation eq;
+    eq.name = "eq";
+    eq.call = (callback) eq_fn;
+    operation_register(manager, eq);
+
+    Operation dummy;
+    dummy.name = ":";
+    dummy.call = (callback) dummy_fn;
+    operation_register(manager, dummy);
 }

@@ -1,5 +1,6 @@
 #ifndef _string
 #define _string
+#include <ctype.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -7,6 +8,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
+
+#include <core/logger.h>
 
 #include <utils/string.h>
 #include <utils/array.h>
@@ -307,18 +310,38 @@ visible char** split(const char* data, const char* f) {
 }
 
 
-// Function to trim whitespace from both ends of a string
-visible char* strip(char* str) {
+char* strip(const char* str) {
+    if (str == NULL) {
+        return NULL; // Handle NULL input
+    }
+
     // Trim leading whitespace
-    while (isspace((unsigned char)*str)) str++;
+    const char* src = str;
+    while (isspace((unsigned char)*src)) {
+        src++;
+    }
 
     // Trim trailing whitespace
-    char* end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end)) end--;
+    const char* end = src + strlen(src) - 1;
+    while (end > src && isspace((unsigned char)*end)) {
+        end--;
+    }
 
-    // Null terminate the trimmed string
-    *(end + 1) = '\0';
+    // Calculate the length of the trimmed string
+    size_t length = end - src + 1;
 
-    return str;
+    // Allocate memory for the new string
+    char* trimmed = (char*)malloc(length + 1);
+    if (trimmed == NULL) {
+        return NULL; // Handle memory allocation failure
+    }
+
+    // Copy the trimmed string and null-terminate it
+    strncpy(trimmed, src, length);
+    trimmed[length] = '\0';
+    debug("%s len:%d removed:%d\n", trimmed, length, strlen(str) - length);
+
+    return trimmed;
 }
+
 #endif

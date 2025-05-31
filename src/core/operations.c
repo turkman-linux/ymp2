@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-
+#include <core/logger.h>
 #include <core/operations.h>
 
 typedef struct {
@@ -55,10 +57,14 @@ void visible operation_register(OperationManager *manager, Operation new_op) {
 }
 
 int visible operation_main(OperationManager *manager, const char* name, void* args){
+    if(name && strlen(name) <= 0){
+        return 0;
+    }
     int status = 0;
     OperationManagerPriv* priv = (OperationManagerPriv*)manager->priv_data;
     for (size_t i = 0; i < manager->length; i++) {
         if (strcmp(manager->operations[i].name, name) == 0) {
+            debug("Running:%s\n", name);
             priv->running = true;
             status = manager->operations[i].call(args);
             priv->running = false;
@@ -70,5 +76,6 @@ int visible operation_main(OperationManager *manager, const char* name, void* ar
             }
         }
     }
+    debug("exit with:%d\n", status);
     return status;
 }
