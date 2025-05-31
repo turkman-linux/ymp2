@@ -5,7 +5,7 @@
  * @brief Define string or boolean variables.
  */
 
-#ifndef LIBYMP
+#ifndef invisible
 #define invisible ;//
 #endif
 

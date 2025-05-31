@@ -10,7 +10,7 @@ static int hello_fn(void** args){
     return 0;
 }
 
-visible void ymp_main(Ymp* ymp){
+visible void plugin_init(Ymp* ymp){
     // too simple plugin
     if(getenv("hello")){
         Operation op;

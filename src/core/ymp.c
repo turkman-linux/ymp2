@@ -92,7 +92,7 @@ visible void load_plugin(Ymp* ymp, const char* path){
     }
     dlerror();
     void (*plugin_func)(Ymp* ymp);
-    *(void**)(&plugin_func) = dlsym(handle, "ymp_main");
+    *(void**)(&plugin_func) = dlsym(handle, "plugin_init");
     if(!plugin_func){
         printf("Plugin is invalid: %s\n ", path);
         return;
@@ -100,7 +100,3 @@ visible void load_plugin(Ymp* ymp, const char* path){
     plugin_func(ymp);
 }
 
-// libymp as also empty ymp plugin
-visible void ymp_main(Ymp* ymp){
-    (void)ymp;
-}

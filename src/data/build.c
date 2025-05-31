@@ -526,6 +526,15 @@ visible bool build_from_path(const char* path) {
     return (build != NULL && cache != NULL);
 }
 
+static char* pwd(){
+   char cwd[1024]; // Buffer to store the directory path
+   if (getcwd(cwd, sizeof(cwd)) != NULL) {
+      debug("Current working directory: %s\n", cwd);
+   } else {
+      perror("getcwd() error"); // Prints error if getcwd() fails
+   }
+   return strdup(cwd);
+}
 
 visible char* create_package(const char* path) {
     // Get the current working directory

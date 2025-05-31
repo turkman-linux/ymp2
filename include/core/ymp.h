@@ -100,5 +100,16 @@ int ymp_run(Ymp* ymp);
 * @brief Global Ymp struct.
 */
 invisible Ymp *global;
+/**
+ * @brief Loads a plugin from the specified path into the Ymp instance.
+ *
+ * This function initializes and loads a plugin, making it available for use
+ * within the provided Ymp instance. The plugin's functionality can then be
+ * accessed through the Ymp interface.
+ *
+ * @param ymp Pointer to the Ymp instance where the plugin will be loaded.
+ * @param path The path to the plugin file to be loaded.
+ */
 void load_plugin(Ymp *ymp, const char* path);
+
 #endif

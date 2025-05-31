@@ -84,5 +84,14 @@ void package_load_from_metadata(Package* pkg, const char* metadata, bool is_sour
 bool package_extract(Package* pkg);
 
 
+/**
+ * @brief Releases the resources associated with a Package.
+ *
+ * This function decreases the reference count of the specified package.
+ * If the reference count reaches zero, the package is freed.
+ *
+ * @param pkg Pointer to the Package instance to be released.
+ */
 void package_unref(Package *pkg);
+
 #endif

@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <utils/array.h>
 
-#ifndef LIBYMP
+#ifndef invisible
 #define invisible ;//
 #endif
 

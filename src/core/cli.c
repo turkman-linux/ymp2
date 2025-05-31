@@ -8,9 +8,7 @@
 
 #include <config.h>
 
-#ifndef LIBYMP
-
-int main(int argc, char** argv){
+int ymp_main(int argc, char** argv){
     Ymp* ymp = ymp_init(); // Create ymp context
     char** plugins = find(PLUGINDIR);
     size_t i = 0;

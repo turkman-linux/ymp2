@@ -227,5 +227,4 @@ void writefile(const char* path, const char* data);
  */
 bool remove_all(const char* path);
 
-char* pwd();
 #endif
