@@ -13,5 +13,6 @@ Repository* repository_new();
 void repository_load_from_index(Repository* repo, const char* path);
 void repository_load_from_data(Repository* repo, const char* data);
 bool repository_download_package(Repository* repo, const char* name, bool is_source);
+Package* repository_get(Repository *repo, const char* name, bool is_source);
 void repository_unref(Repository* repo);
 #endif

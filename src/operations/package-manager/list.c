@@ -24,7 +24,6 @@ static void list_available(){
         }
         repository_unref(repo);
     }
-
 }
 
 static int list(void** args){
@@ -34,6 +33,7 @@ static int list(void** args){
     }
     return 0;
 }
+
 void list_init(OperationManager* manager){
     Operation op;
     op.name = "list";

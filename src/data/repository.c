@@ -9,6 +9,7 @@
 #include <utils/yaml.h>
 #include <utils/fetcher.h>
 
+#include <core/logger.h>
 #include <core/variable.h>
 #include <config.h>
 
@@ -53,6 +54,7 @@ static void repository_load_data(Repository* repo, const char* data, bool is_sou
     if(len == 0){
         return;
     }
+    debug("loaded: %d\n", len);
     // Reallocate package storage
     repo->packages = realloc(repo->packages, (repo->package_count + len) * sizeof(Package*));
     if (!repo->packages) {
@@ -82,13 +84,16 @@ visible Package* repository_get(Repository *repo, const char* name, bool is_sour
             continue;
         }
         if (strcmp(repo->packages[i]->name, name) == 0) {
+            debug("Found package: %s\n", name);
             return repo->packages[i];
         }
     }
+    debug("Not found package: %s\n", name);
     return NULL;
 }
 
 visible void repository_load_from_index(Repository* repo, const char* index) {
+    debug("Load from index: %s\n", index);
     // Read index
     char* data = readfile(index);
     if (data) {
@@ -98,6 +103,7 @@ visible void repository_load_from_index(Repository* repo, const char* index) {
 }
 
 visible void repository_load_from_data(Repository* repo, const char* data) {
+    debug("Load from data len:%d\n", strlen(data));
     if (repo == NULL) {
         return;
     }
