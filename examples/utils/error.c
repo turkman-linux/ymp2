@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <core/ymp.h>
+
 #include <utils/array.h>
 #include <utils/error.h>
 
 int main() {
+    
     // Create an error array
     array* error_array = array_new(); // Assuming array_create initializes an empty array
 

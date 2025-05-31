@@ -14,6 +14,31 @@
 #include <core/variable.h>
 #include <utils/array.h>
 
+#include <setjmp.h>
+
+typedef struct {
+    jmp_buf buf;
+    int code;
+    bool enable;
+} ErrorContext;
+
+
+extern ErrorContext exception;
+#ifndef try
+#define try \
+    exception.enable = true; \
+    exception.code=setjmp(exception.buf);\
+    if (exception.code == 0)
+#define catch \
+    else if (exception.enable) { \
+        exception.enable = false; \
+    } if(true)
+#define throw(code) \
+    if (exception.enable) {\
+        longjmp(exception.buf, code); \
+    }
+#endif
+
 /**
  * @struct Ymp
  * @brief Represents the main structure for the Ymp library.

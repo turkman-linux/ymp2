@@ -2,11 +2,20 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <unistd.h>
+#include <signal.h>
+
+#if __GNU_LIBRARY__
+#include <execinfo.h>
+#endif 
 
 #include <core/ymp.h>
 #include <core/logger.h>
 
+#include <utils/error.h>
+
 void ctx_init(OperationManager *manager);
+
+visible ErrorContext exception;
 
 typedef struct {
     const char* name;
@@ -27,6 +36,25 @@ static YmpPrivate* queue_init(){
     queue->capacity = 0;
     queue->item = malloc(sizeof(OperationJob));
     return queue;
+}
+static void sigsegv_event(int signal){
+    void *array[10];
+    size_t size;
+    char **strings;
+    size_t i;
+
+    /* Get backtrace */
+    size = backtrace(array, 10);
+    strings = backtrace_symbols(array, size);
+
+    printf("Segmentation fault:\n");
+    for (i = 0; i < size; i++) {
+        printf("%s\n", strings[i]);
+    }
+
+    /* Free the memory allocated by backtrace_symbols */
+    free(strings);
+    longjmp(exception.buf, signal);
 }
 
 visible Ymp* ymp_init(){
@@ -50,6 +78,12 @@ visible Ymp* ymp_init(){
     if(getenv("DEBUG")){
         logger_set_status(DEBUG, true);
     }
+    struct sigaction sigact;
+    sigact.sa_handler = sigsegv_event;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(SIGSEGV, &sigact, NULL);
+
     return ymp; // Return the pointer to the newly created instance
 }
 
