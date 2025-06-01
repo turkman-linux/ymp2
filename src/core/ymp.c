@@ -38,11 +38,11 @@ static YmpPrivate* queue_init(){
     return queue;
 }
 static void sigsegv_event(int signal){
+#if __GNU_LIBRARY__
     void *array[10];
     size_t size;
     char **strings;
     size_t i;
-
     /* Get backtrace */
     size = backtrace(array, 10);
     strings = backtrace_symbols(array, size);
@@ -54,6 +54,7 @@ static void sigsegv_event(int signal){
 
     /* Free the memory allocated by backtrace_symbols */
     free(strings);
+#endif
     longjmp(exception.buf, signal);
 }
 
