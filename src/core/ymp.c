@@ -12,6 +12,7 @@
 #include <core/logger.h>
 
 #include <utils/error.h>
+#include <utils/string.h>
 
 void ctx_init(OperationManager *manager);
 
@@ -124,14 +125,13 @@ visible void load_plugin(Ymp* ymp, const char* path){
     void *handle;
     handle = dlopen(path, RTLD_LAZY);
     if (!handle) {
-        printf("Failed to load plugin: %s from %s\n ",dlerror(), path);
+        error_add(build_string("Failed to load plugin: %s from %s\n",dlerror(), path));
         return;
     }
     dlerror();
     void (*plugin_func)(Ymp* ymp);
     *(void**)(&plugin_func) = dlsym(handle, "plugin_init");
     if(!plugin_func){
-        printf("Plugin is invalid: %s\n ", path);
         return;
     }
     plugin_func(ymp);

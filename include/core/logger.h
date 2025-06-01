@@ -31,6 +31,11 @@
  */
 #define INFO 3
 
+/** @def ERROR
+ *  @brief Log level for error messages.
+ */
+#define ERROR 4
+
 #define COLORIZE 4
 
 /**

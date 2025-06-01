@@ -216,29 +216,6 @@ visible char* url_encode(const char *input) {
 }
 
 
-visible int endswith(const char* data, const char* f) {
-    int i = strlen(data);
-    int j = strlen(f);
-
-    if (i < j) {
-        return 0;
-    }
-
-    return strcmp(data + i - j, f) == 0;
-}
-
-visible int startswith(const char* data, const char* f) {
-    int i = strlen(data);
-    int j = strlen(f);
-
-    if (i < j) {
-        return 0;
-    }
-
-    return strncmp(data, f, j) == 0;
-}
-
-
 visible char* build_string(char* format, ...) {
     va_list args;
     va_start(args, format);

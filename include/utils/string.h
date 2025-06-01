@@ -11,6 +11,7 @@
 #define _string_h
 
 #include <stddef.h>
+#include <string.h>
 
 /**
  * @brief Reads the entire content of a file into a string.
@@ -95,7 +96,8 @@ char* url_encode(const char *input);
  * @param f The suffix to check for.
  * @return 1 if data ends with f, 0 otherwise.
  */
-int endswith(const char* data, const char* f);
+#define endswith(data, f) \
+    ((strlen(f) <= strlen(data)) && (strcmp(data + strlen(data) - strlen(f), f) == 0))
 
 /**
  * @brief Checks if a string starts with a specified prefix.
@@ -104,7 +106,8 @@ int endswith(const char* data, const char* f);
  * @param f The prefix to check for.
  * @return 1 if data starts with f, 0 otherwise.
  */
-int startswith(const char* data, const char* f);
+#define startswith(data, f) \
+    (strlen(f) <= strlen(data)) && (strcmp(data, f) == 0)
 
 /**
  * @brief Builds a formatted string using variable arguments.

@@ -4,6 +4,8 @@
 
 #include <utils/array.h>
 #include <utils/error.h>
+
+#include <core/logger.h>
 #include <core/ymp.h>
 
 visible void error_fn(array* error, int status){
@@ -15,7 +17,7 @@ visible void error_fn(array* error, int status){
     char** errs = array_get(error, &len);
     for(i=0;i<len;i++){
         if(errs[i] != NULL){
-            printf("Error: %s\n",errs[i]);
+            print_fn("",ERROR,errs[i]);
         }
     }
     if(i>0){
