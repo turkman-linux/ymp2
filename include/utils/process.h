@@ -14,7 +14,7 @@
 /**
  * @brief Get the current epoch time.
  *
- * This function retrieves the current epoch time in seconds.
+ * This function retrieves the current epoch time in micro seconds.
  * The epoch time is the number of seconds that have elapsed since
  * January 1, 1970 (UTC).
  *
