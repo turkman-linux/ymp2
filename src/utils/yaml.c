@@ -10,6 +10,7 @@
 #define MAX_LINE_LENGTH 1024
 
 visible bool yaml_has_area(const char *data, const char *path) {
+    debug("%s\n",path);
     char line[MAX_LINE_LENGTH];
     FILE *stream = fmemopen((void *)data, strlen(data), "r");
     while (fgets(line, sizeof(line), stream)) {
@@ -23,6 +24,7 @@ visible bool yaml_has_area(const char *data, const char *path) {
 }
 
 visible char *yaml_get_area(const char *data, const char *path) {
+    debug("%s\n",path);
     char line[MAX_LINE_LENGTH];
     bool in_area = false;
     size_t area_data_size = strlen(data) + 1;
@@ -68,6 +70,7 @@ visible char *yaml_get_area(const char *data, const char *path) {
 
 
 visible char *yaml_get_value(const char *data, const char *name) {
+    debug("%s\n",name);
     char line[MAX_LINE_LENGTH];
     bool in_value = false;
     char *value = malloc(MAX_LINE_LENGTH);
@@ -90,6 +93,7 @@ visible char *yaml_get_value(const char *data, const char *name) {
 }
 
 visible char **yaml_get_array(const char *data, const char *name, int *count) {
+    debug("%s\n",name);
     char line[MAX_LINE_LENGTH];
     int max = 32;
     char **array = malloc(max * sizeof(char*));
@@ -120,11 +124,10 @@ visible char **yaml_get_array(const char *data, const char *name, int *count) {
 
 // Function to get the area list
 visible char** yaml_get_area_list(const char* fdata, const char* path, int* area_count) {
+    debug("%s\n",path);
+    puts(fdata);
     int max = 32;
     char** ret = malloc(max * sizeof(char*));
-    for (int i = 0; i < max; i++) {
-        ret[i] = NULL; // Initialize pointers to NULL
-    }
 
     array * area = array_new();
     char line[MAX_LINE_LENGTH];
@@ -149,7 +152,6 @@ visible char** yaml_get_area_list(const char* fdata, const char* path, int* area
                     }
                 }
                 ret[*area_count] = trim(array_get_string(area));
-                debug("%d %s\n",*area_count, line);
                 (*area_count)++;
                 array_clear(area);
                 e = false;

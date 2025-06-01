@@ -88,20 +88,42 @@ visible char* str_add(char* str1, char* str2){
     return ret;
 }
 
-visible char* trim(char* data) {
-    size_t cnt= count_tab (data);
-    array *a = array_new();
-    char** lines = split(data, "\n");
-    for(size_t i=0; lines[i]; i++){
-        if(strlen(lines[i]) > cnt){
-            array_add(a, lines[i]+cnt);
-            array_add(a,"\n");
+visible char* trim(char *content) {
+    // Create a copy of the content to modify
+    char *trimmed_content = content;
+    if (trimmed_content == NULL) {
+        return NULL; // Memory allocation failed
+    }
+
+    char *line = strtok(trimmed_content, "\n"); // Tokenize the content by new lines
+    if (line == NULL) {
+        return trimmed_content; // No content to process
+    }
+
+    // Determine the number of leading whitespace characters in the first line
+    size_t n = count_tab(line);
+    
+    // Process the first line
+    if (strlen(line) > n) {
+        memmove(line, line + n, strlen(line) - n + 1); // Trim the first line
+    } else {
+        line[0] = '\0'; // If n is greater than or equal to line length, set line to empty
+    }
+    size_t cur = strlen(line) - n;
+    // Process the remaining lines
+    while ((line = strtok(NULL, "\n")) != NULL) {
+        if (strlen(line) > n) {
+            trimmed_content[cur+1] = '\n';
+            memmove(trimmed_content+cur+2, line + n, strlen(line) - n); // Trim the line
+            cur+=strlen(line) -n+1;
+        } else {
+            line[0] = '\0'; // Set line to empty if n is greater than or equal to line length
         }
     }
-    data=array_get_string(a);
-    array_unref(a);
-    return data;
+    trimmed_content[cur+1] = '\0';
+    return trimmed_content; // Return the trimmed content
 }
+
 
 visible char* int_to_string(int num){
     char *ret = calloc(((sizeof(num) - 1) / 3 + 2), sizeof(char));
