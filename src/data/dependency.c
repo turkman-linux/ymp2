@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <data/repository.h>
 #include <core/logger.h>
@@ -23,32 +24,32 @@ static void resolve_dependency_fn(char* name, bool emerge) {
     if (array_has(cache, name)) {
         return;
     }
-    
+
     // Log the current package being searched and the depth level
-    debug("Search: %s depth:%d\n", name, depth);
-    
+    print("Search: %s depth:%d\n", name, depth);
+
     // Iterate through the repositories to find the package
     for (size_t i = 0; repos[i]; i++) {
         Package *p = repository_get(repos[i], name, emerge); // Get the package from the repository
-        if (!p) {
+        if (!p || !p->dependencies) {
             continue; // If the package is not found, continue to the next repository
         }
-        
+
         depth++; // Increase the depth for the current package
         // Recursively resolve dependencies for each dependency of the package
         for (size_t j = 0; p->dependencies[j]; j++) {
             resolve_dependency_fn(p->dependencies[j], emerge);
         }
         depth--; // Decrease the depth after processing all dependencies
-        
+
         // Log the resolved package and current depth
-        debug("Resolved: %s depth:%d\n", name, depth);
-        
+        print("Resolved: %s depth:%d\n", name, depth);
+
         // Add the resolved package to the list of resolved dependencies
         array_add(resolved, name);
         i++; // Increment the repository index (this seems to be an error, should be removed)
     }
-    
+
     // Add the package to the cache to avoid reprocessing in the future
     array_add(cache, name);
 }
@@ -57,27 +58,41 @@ static void resolve_dependency_fn(char* name, bool emerge) {
 static void resolve_begin() {
     resolved = array_new(); // Create a new array for resolved dependencies
     cache = array_new(); // Create a new array for caching resolved packages
-    
+
     // Build the path to the repository index
     char* repodir = build_string("%s/%s/index", get_value("DESTDIR"), STORAGE);
     char** dirs = listdir(repodir); // List the directories in the repository
-    
+
     size_t i = 0;
+    size_t j = 0;
     // Count the number of repositories
     while (dirs[i]) {
+        if(!endswith(dirs[i], ".yaml")){
+            i++;
+            continue;
+        }
+        j++;
         i++;
     }
-    
+
     // Allocate memory for the repository pointers
-    repos = calloc(i + 1, sizeof(Repository*));
+    repos = calloc(j, sizeof(Repository*));
     i = 0;
+    j=0;
     // Load each repository from the index
     while (dirs[i]) {
-        repos[i] = repository_new(); // Create a new repository instance
-        repository_load_from_index(repos[i], dirs[i]); // Load the repository data
-        i++; // Increment the directory index
+        if(!endswith(dirs[i], ".yaml")){
+            i++;
+            continue;
+        }
+        char* index = build_string("%s/%s", repodir, dirs[i]);
+        repos[j] = repository_new(); // Create a new repository instance
+        repository_load_from_index(repos[j], index); // Load the repository data
+        i++;
+        j++;
+        free(index);
     }
-    
+
     // Free the directory list and the repository directory string
     free(dirs);
     free(repodir);

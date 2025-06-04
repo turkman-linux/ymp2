@@ -97,13 +97,14 @@ visible void package_load_from_metadata(Package* pkg, const char* metadata, bool
         }
     }
 
+
     // Read the package information from the archive
     pkg->name = yaml_get_value(pkg->metadata, "name");
     pkg->version = yaml_get_value(pkg->metadata, "version");
     pkg->release = atoi(yaml_get_value(pkg->metadata, "release"));
     int dep_count = 0;
-    pkg->dependencies = yaml_get_array(pkg->metadata, "dependencies", &dep_count);
-    debug("package:%s - %s\n", pkg->name, pkg->version);
+    pkg->dependencies = yaml_get_array(pkg->metadata, "depends", &dep_count);
+    debug("package:%s - %s - %d\n", pkg->name, pkg->version, dep_count);
 
 }
 

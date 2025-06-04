@@ -99,7 +99,6 @@ visible void repository_load_from_index(Repository* repo, const char* index) {
     char* data = readfile(index);
     if (data) {
         repository_load_from_data(repo, data);
-        free(data); // Cleanup
     }
 }
 

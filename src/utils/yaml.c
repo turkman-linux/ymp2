@@ -95,9 +95,7 @@ visible char *yaml_get_value(const char *data, const char *name) {
 visible char **yaml_get_array(const char *data, const char *name, int *count) {
     debug("%s\n",name);
     char line[MAX_LINE_LENGTH];
-    int max = 32;
-    char **array = malloc(max * sizeof(char*));
-    *count = 0;
+    array *a = array_new();
 
     char *area_data = yaml_get_area(data, name);
     if (!area_data) {
@@ -107,25 +105,23 @@ visible char **yaml_get_array(const char *data, const char *name, int *count) {
     FILE *stream = fmemopen(area_data, strlen(area_data), "r");
     while (fgets(line, sizeof(line), stream)) {
         if (line[0] == '-') {
-            if (*count >= max){
-                max += 32;
-                array = realloc(array, max * sizeof(char*));
-            }
-            array[*count] = malloc(strlen(line) + 1);
-            strcpy(array[*count], line + 1); // Skip the '-'
-            array[*count][strcspn(array[*count], "\n")] = 0; // Remove newline
-            (*count)++;
+            array_add(a, line+2);
         }
     }
     fclose(stream);
     free(area_data);
-    return array;
+    size_t len;
+    char** ret = array_get(a, &len);
+    if (*count) {
+        *count = len;
+    }
+    array_unref(a);
+    return ret;
 }
 
 // Function to get the area list
 visible char** yaml_get_area_list(const char* fdata, const char* path, int* area_count) {
     debug("%s\n",path);
-    puts(fdata);
     int max = 32;
     char** ret = malloc(max * sizeof(char*));
 
