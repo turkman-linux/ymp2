@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <libgen.h>
 
 #include <data/package.h>
 #include <data/build.h>
@@ -11,6 +12,7 @@
 #include <utils/string.h>
 #include <utils/file.h>
 #include <utils/hash.h>
+#include <utils/fetcher.h>
 
 #include <core/logger.h>
 #include <core/ymp.h>
@@ -106,6 +108,23 @@ visible void package_load_from_metadata(Package* pkg, const char* metadata, bool
     pkg->dependencies = yaml_get_array(pkg->metadata, "depends", &dep_count);
     debug("package:%s - %s - %d\n", pkg->name, pkg->version, dep_count);
 
+}
+
+visible bool package_download(Package* p, const char* repo_uri){
+    // Generate download URI
+    char* uri = str_replace(repo_uri, "$uri", yaml_get_value(p->metadata, "uri"));
+    // Download file into cache
+    char* destdir = get_value("DESTDIR");
+    char* pkgname = build_string("%s-%s-%d", p->name, p->version, p->release);
+    char* target = build_string("%s/%s/packages/%s", destdir, STORAGE, basename(uri));
+    // Fetch package
+    bool status = fetch(uri, target);
+    // Cleanup
+    free(pkgname);
+    free(target);
+    free(uri);
+    // Return status
+    return status;
 }
 
 // Function to extract a package

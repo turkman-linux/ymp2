@@ -67,6 +67,7 @@ static void repository_load_data(Repository* repo, const char* data, bool is_sou
     for (int i = 0; i < len && areas[i]; i++) {
         repo->packages[repo->package_count] = package_new();
         repo->packages[repo->package_count]->is_virtual = true;
+        repo->packages[repo->package_count]->repo = (void*)repo;
         if (repo->packages[repo->package_count] == NULL) {
             printf("Failed to create new package\n");
             continue; // Handle package creation failure
@@ -124,19 +125,9 @@ visible bool repository_download_package(Repository* repo, const char* name, boo
     if (p == NULL) {
         return false;
     }
-    // Generate download URI
-    char* uri = str_replace(repo->uri, "$uri", yaml_get_value(p->metadata, "uri"));
-    // Download file into cache
-    char* destdir = get_value("DESTDIR");
-    char* pkgname = build_string("%s-%s-%d", p->name, p->version, p->release);
-    char* target = build_string("%s/%s/packages/%s", destdir, STORAGE, basename(uri));
-    // Fetch package
-    bool status = fetch(uri, target);
+    bool status = package_download(p, repo->uri);
     // Cleanup
-    free(pkgname);
-    free(target);
-    free(uri);
-    // Return status
+    free(p);
     return status;
 }
 

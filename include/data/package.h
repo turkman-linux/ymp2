@@ -22,12 +22,12 @@ typedef struct {
     const char* version; /**< Package version string */
     int release; /**< Package release number */
     bool is_source; /**< Indicates if the package is a source package */
-    
     /** @cond */
     const char* metadata; /**< Package metadata. Used by internal functions. Do not modify! */
     const char* files; /**< Package files metadata. Used by internal functions. Do not modify! */
     const char* links; /**< Package links metadata. Used by internal functions. Do not modify! */
     bool is_virtual;
+    void* repo; /**< Address of repository */
     array *errors; /**< List of errors encountered during package processing */
     Archive *archive; /**< Pointer to the package archive */
     /** @endcond */
@@ -69,6 +69,16 @@ Package* package_new();
 void package_load_from_file(Package* pkg, const char* path);
 
 void package_load_from_metadata(Package* pkg, const char* metadata, bool is_source);
+
+/**
+ * @brief Download package from given uri
+ *
+ * @param pkg A pointer to the Package structure that contains the package
+ *            to be downloaded.
+ *
+ * @return true if the extraction was successful, false otherwise.
+ */
+bool package_download(Package* pkg, const char* repo_uri);
 
 /**
  * @brief Extracts the contents of a package.
