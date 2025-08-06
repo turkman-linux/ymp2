@@ -1,7 +1,8 @@
 PROJECT_NAME           = "Ymp"
-INPUT                  = ../include
+INPUT                  = ../docs ../include
 OUTPUT_DIRECTORY       = @OUTPUT@
 GENERATE_HTML          = YES
+GENERATE_TREEVIEW      = YES
 GENERATE_MAN           = YES
 RECURSIVE              = YES
 EXTRACT_ALL            = YES
