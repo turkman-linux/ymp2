@@ -12,9 +12,12 @@
 
 #include <config.h>
 
+static Package **resolved;
+static size_t resolved_count = 0;
+static size_t resolved_total = 0;
+
 // Global variables for repositories, resolved dependencies, and cache
 static Repository** repos;
-static array *resolved;
 static array *cache;
 size_t depth = 0; // Variable to track the depth of dependency resolution
 
@@ -48,17 +51,22 @@ static void resolve_dependency_fn(char* name, bool emerge) {
         // Log the resolved package and current depth
         print("Resolved: %s depth:%d\n", name, depth);
 
-        // Add the resolved package to the list of resolved dependencies
-        array_add(resolved, name);
-        i++; // Increment the repository index (this seems to be an error, should be removed)
+
+        // Check list length reallocate if needed
+        if(resolved_count+1 <= resolved_total) {
+            resolved_total += 1024;
+            resolved = realloc(resolved, sizeof(Package*)*resolved_total);
+        }
+        // Add the resolved package to the list of resolved packages
+        resolved[resolved_count] = p;
+        resolved_count++;
     }
 
 }
 
 // Function to initialize the resolution process
 visible Repository** resolve_begin() {
-    resolved = array_new(); // Create a new array for resolved dependencies
-    cache = array_new(); // Create a new array for caching resolved packages
+
 
     // Build the path to the repository index
     char* repodir = build_string("%s/%s/index", get_value("DESTDIR"), STORAGE);
@@ -107,19 +115,27 @@ visible void resolve_end(Repository** repos) {
         repository_unref(repos[i]);
     }
     free(repos); // Free the repository pointer array
-    array_unref(resolved); // Unreference the resolved dependencies array
+    free(resolved); // Unreference the resolved dependencies array
     array_unref(cache); // Unreference the cache array
 }
 
 // Public function to resolve dependencies for a given package name
-visible char** resolve_dependency(char* name) {
+visible Package** resolve_dependency(char* name) {
     size_t begin_time = get_epoch();
-    repos = resolve_begin(); // Initialize the resolution process
+    if(resolved != NULL){
+        free(resolved);
+    }
+    if(repos == NULL){
+        info("Dependencies resolve failed\n");
+        return NULL; // Dont resolve package if repository list is empty
+    }
+    resolved = malloc(sizeof(Package*)* 1024); // Create a new array for resolved packages
+    resolved_count = 0; // reset resolve count
+    resolved_total = 0; // reset resolve total
+    cache = array_new(); // Create a new array for caching resolved packages
+    
     resolve_dependency_fn(name, iseq(get_value("no-emerge"), "")); // Resolve dependencies recursively
-    size_t len;
-    char** ret = array_get(resolved, &len); // Get the resolved dependencies as an array
-    resolve_end(repos); // Clean up resources
     info("Dependencies resolved in %s µs\n", get_epoch() - begin_time);
-    return ret; // Return the array of resolved dependencies
+    return resolved; // Return the array of resolved dependencies
 }
 

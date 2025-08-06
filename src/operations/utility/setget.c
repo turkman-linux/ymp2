@@ -21,7 +21,8 @@ static int eq_fn(char** args){
     }
 }
 
-static int dummy_fn(){
+static int dummy_fn(char** args){
+    (void)args;
     return 0;
 }
 void setget_init(OperationManager* manager){

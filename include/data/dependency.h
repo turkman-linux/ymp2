@@ -1,4 +1,5 @@
 #include <data/repository.h>
+#include <data/package.h>
 /**
  * @brief Resolves the dependencies for a given package name.
  *
@@ -10,7 +11,7 @@
  * @return A pointer to an array of strings containing the dependency names,
  *         or NULL if the package is not found or an error occurs.
  */
-char** resolve_dependency(char* name);
+Package** resolve_dependency(char* name);
 /**
  * @brief Loads repositories for dependency resolution.
  *

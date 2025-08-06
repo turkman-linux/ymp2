@@ -13,9 +13,9 @@
 #include <utils/file.h>
 
 static int install_main(char** args){
-    char** res = resolve_dependency(args[0]);
+    Package** res = resolve_dependency(args[0]);
     for(size_t i=0; res[i];i++){
-        printf(res[i]);
+        printf(res[i]->name);
     }
     return 0;
 }
