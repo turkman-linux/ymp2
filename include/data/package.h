@@ -104,4 +104,11 @@ bool package_extract(Package* pkg);
  */
 void package_unref(Package *pkg);
 
+/**
+ * @brief Check package is installed id system.
+ *
+ * @param pkg Pointer to the Package to be checked
+ */
+bool package_is_installed(Package *pkg);
+
 #endif

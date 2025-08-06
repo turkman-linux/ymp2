@@ -36,7 +36,9 @@ static int install_main(char** args){
     Package** res = resolve_dependency(args[0]);
     // Define jobs
     for(size_t i=0; res[i];i++){
-        printf("%s\n",res[i]->name);
+        if(package_is_installed(res[i])){
+            continue;
+        }
         jobs_add(download_jobs, (callback)download_cb, res[i], NULL);
         jobs_add(install_jobs, (callback)install_cb, res[i], NULL);
     }

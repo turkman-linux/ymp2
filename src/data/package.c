@@ -127,6 +127,7 @@ visible bool package_download(Package* p, const char* repo_uri){
     return status;
 }
 
+
 // Function to extract a package
 visible bool package_extract(Package* pkg) {
     // Check if the package pointer is NULL
@@ -246,3 +247,10 @@ visible bool package_extract(Package* pkg) {
     return true; // Return true if extraction was successful
 }
 
+visible bool package_is_installed(Package *pkg){
+    char* destdir = variable_get_value(global->variables, "DESTDIR");
+    char* meta = build_string("%s/%s/metadata/%s.yaml", destdir, STORAGE, pkg->name);
+    bool is_package = isfile(meta);
+    free(meta);
+    return is_package;
+}
