@@ -129,6 +129,23 @@ void ymp_add(Ymp* ymp, const char* name, void* args);
 
 int ymp_run(Ymp* ymp);
 
+/**
+ * @brief Decrements the reference count of a Ymp object.
+ *
+ * This function is used to release a reference to a Ymp object. When the reference count
+ * reaches zero, the object is freed and any associated resources are released. 
+ * It is important to call this function for every call to @ref ymp_ref to avoid memory leaks.
+ *
+ * @param ymp A pointer to the Ymp object whose reference count is to be decremented.
+ *            This pointer must not be NULL. If it is NULL, the behavior is undefined.
+ *
+ * @note This function is not thread-safe. Ensure that no other threads are accessing
+ *       the Ymp object while this function is called.
+ *
+ * @warning Calling this function on an already freed object will lead to undefined behavior.
+ */
+void ymp_unref(Ymp* ymp);
+
 /** @cond */
 invisible Ymp *global;
 /** @endcond */

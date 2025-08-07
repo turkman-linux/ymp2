@@ -105,6 +105,14 @@ visible Ymp* ymp_init(){
     return ymp; // Return the pointer to the newly created instance
 }
 
+visible void ymp_unref(Ymp* ymp){
+    free(ymp->errors);
+    free(ymp->variables);
+    free(ymp->manager);
+    free(ymp->priv_data);
+    free(ymp);
+}
+
 visible void ymp_add(Ymp* ymp, const char* name, void* args) {
     YmpPrivate *queue = (YmpPrivate*)ymp->priv_data;
     if(queue->length >= queue->capacity){

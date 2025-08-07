@@ -1,6 +1,5 @@
 project(
-  'ymp', 
-  'c',
+  'ymp', 'c', 'vala',
   version: run_command(
           ['bash', '-c', 'head -n 1 debian/changelog | sed "s/.*(//g;s/).*//g"']
           , check:true
