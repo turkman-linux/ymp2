@@ -26,6 +26,7 @@ typedef struct {
     const char* metadata; /**< Package metadata. Used by internal functions. Do not modify! */
     const char* files; /**< Package files metadata. Used by internal functions. Do not modify! */
     const char* links; /**< Package links metadata. Used by internal functions. Do not modify! */
+    const char* path; /**< Package path. Used by internal functions. Do not modify! */
     bool is_virtual;
     void* repo; /**< Address of repository */
     array *errors; /**< List of errors encountered during package processing */

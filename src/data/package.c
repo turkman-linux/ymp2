@@ -116,12 +116,11 @@ visible bool package_download(Package* p, const char* repo_uri){
     // Download file into cache
     char* destdir = get_value("DESTDIR");
     char* pkgname = build_string("%s-%s-%d", p->name, p->version, p->release);
-    char* target = build_string("%s/%s/packages/%s", destdir, STORAGE, basename(uri));
+    p->path = build_string("%s/%s/packages/%s", destdir, STORAGE, basename(uri));
     // Fetch package
-    bool status = fetch(uri, target);
+    bool status = fetch(uri, p->path);
     // Cleanup
     free(pkgname);
-    free(target);
     free(uri);
     // Return status
     return status;

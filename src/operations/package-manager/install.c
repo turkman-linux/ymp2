@@ -21,6 +21,7 @@ static int download_cb(void* args){
         printf("Download failed: %s", p->name);
         return 1;
     }
+    package_load_from_file(p, p->path);
     return 0;
 }
 

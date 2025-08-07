@@ -2,6 +2,7 @@
 #define _jobs_h
 
 #include <pthread.h>
+#include <stdbool.h>
 #include <core/operations.h>
 
 /**
