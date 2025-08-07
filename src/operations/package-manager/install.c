@@ -15,10 +15,10 @@
 
 static int download_cb(void* args){
     Package *p = args;
-    printf("Downloading: %s", p->name);
+    printf("Downloading: %s\n", p->name);
     Repository *r = (Repository*)p->repo;
     if(!package_download(p, r->uri)){
-        printf("Download failed: %s", p->name);
+        printf("Download failed: %s\n", p->name);
         return 1;
     }
     package_load_from_file(p, p->path);
@@ -27,9 +27,9 @@ static int download_cb(void* args){
 
 static int install_cb(void* args){
     Package *p = args;
-    printf("Installing: %s", p->name);
+    printf("Installing: %s\n", p->name);
     if(!package_extract(p)){
-        printf("Install failed: %s", p->name);
+        printf("Install failed: %s\n", p->name);
         return 1;
     }
     return 0;
