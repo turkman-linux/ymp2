@@ -1,0 +1,1 @@
+bool quarantine_validate();

@@ -5,6 +5,7 @@
 
 #include <data/repository.h>
 #include <data/dependency.h>
+#include <data/quarantine.h>
 
 #include <config.h>
 
@@ -54,6 +55,9 @@ static int install_main(char** args){
     // Download packages
     jobs_run(download_jobs);
     jobs_run(install_jobs);
+
+    // Quarantine validate and sync
+    quarantine_validate();
 
     // Cleanup resolver and job managers
     resolve_end(repos);

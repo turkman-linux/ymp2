@@ -7,12 +7,14 @@ if get_option('library')
         executable(name, [src]+start, link_with: libymp, link_args: nostdlib)
     endforeach
 endif
-if get_option('vala')
+
+valac = find_program('valac', required: false)
+if get_option('vala') and valac.found()
     glib_dep = dependency('glib-2.0', required: true)
     executable('ymp-vala', ['ymp.vala'], 
         dependencies: [glib_dep],
         link_with: [libymp],
         c_args: ['-Wno-all'],
-        vala_args: ['--pkg', 'ymp', '--vapidir=../include/', '-X', '-I../include']
+        vala_args: ['--pkg', 'ymp', '--vapidir=../include/']
     )
 endif
