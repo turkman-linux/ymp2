@@ -133,7 +133,7 @@ visible Package** resolve_dependency(char* name) {
     resolved_count = 0; // reset resolve count
     resolved_total = 0; // reset resolve total
     cache = array_new(); // Create a new array for caching resolved packages
-    
+
     resolve_dependency_fn(name, iseq(get_value("no-emerge"), "")); // Resolve dependencies recursively
     info("Dependencies resolved in %s µs\n", get_epoch() - begin_time);
     return resolved; // Return the array of resolved dependencies

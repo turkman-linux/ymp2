@@ -18,22 +18,24 @@ static int quarantine_validate_files(const char* name) {
     printf("Validate %s (files)\n", name);
     // Get the destination directory from global variables
     char* destdir = variable_get_value(global->variables, "DESTDIR");
-    
+
     // Initialize status to indicate success or failure
     int status = 0;
-    
+
     // Build the path to the files in quarantine
     char* files_path = build_string("%s/%s/quarantine/files/%s", destdir, STORAGE, name);
-    
+    char* rootfs_path = build_string("%s/%s/quarantine/rootfs/", destdir, STORAGE);
+
     // Check if the files_path is a valid file
     if (!isfile(files_path)) {
         return 0;
     }
-    
+
     // Open the files for reading
     FILE *files = fopen(files_path, "r");
     char sha1[40]; // Buffer to hold SHA1 hash
     char line[1024 + 41]; // Buffer for reading lines (max file name length is 1024)
+    char actual_file[1024 +	strlen(rootfs_path)]; // Buffer for actual file path (max file name length is 1024)
 
     // Read each line from the files
     while (fgets(line, sizeof(line), files)) {
@@ -41,19 +43,20 @@ static int quarantine_validate_files(const char* name) {
         while (line[strlen(line) - 1] == '\n') {
             line[strlen(line) - 1] = '\0';
         }
-        
+
         // Check if the line is valid (length should be greater than 40)
         if (strlen(line) <= 40) {
             status = 1;
             goto free_quarantine_package;
         }
-        
+
         // Extract SHA1 hash and file path from the line
         strncpy(sha1, line, 40);
-        
+
         // Build the actual file path in quarantine root filesystem
-        char* actual_file = build_string("%s/%s/quarantine/rootfs/%s", destdir, STORAGE, line + 41);
-        
+        strcpy(actual_file, rootfs_path);
+        strcat(actual_file, line + 41);
+
         // Check if the actual file exists
         if (!isfile(actual_file)) {
             status = 1;
@@ -64,9 +67,7 @@ static int quarantine_validate_files(const char* name) {
             status = strncmp(actual_sha1, sha1, 40);
             free(actual_sha1);
         }
-        
-        free(actual_file);
-        
+
         // If any status indicates failure, jump to cleanup
         if (status) {
             goto free_quarantine_package;
@@ -76,6 +77,7 @@ static int quarantine_validate_files(const char* name) {
 free_quarantine_package:
     // Cleanup: free allocated memory and close the file
     free(files_path);
+    free(rootfs_path);
     fclose(files);
     return status;
 }
@@ -84,16 +86,16 @@ free_quarantine_package:
 visible bool quarantine_validate() {
     // Get the destination directory from global variables
     char* destdir = variable_get_value(global->variables, "DESTDIR");
-    
+
     // Build the path to the metadata directory
     char* metadata = build_string("%s/%s/quarantine/metadata", destdir, STORAGE);
-    
+
     // Find all metadata files in the directory
     char** metadatas = find(metadata);
-    
+
     // Create a new job queue
     jobs* j = jobs_new();
-    
+
     // Iterate through each metadata file
     for (size_t i = 0; metadatas[i]; i++) {
         // Check if the file has a .yaml extension
@@ -104,7 +106,7 @@ visible bool quarantine_validate() {
             jobs_add(j, (callback)quarantine_validate_files, basename(metadatas[i]), NULL);
         }
     }
-    
+
     // Run the jobs and check for failures
     jobs_run(j);
     bool status = j->failed; // Capture the failure status
