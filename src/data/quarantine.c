@@ -118,7 +118,12 @@ static int quarantine_validate_links(const char* name){
         strcat(actual_link, line+offset+1);
         // Build link target
         line[offset+1]='\0';
-        readlink(actual_link, line+offset+2, 1024-(offset+2));
+        ssize_t rc = readlink(actual_link, line+offset+2, 1024-(offset+2));
+        if(rc <0){
+            perror("Error reading symlink");
+            status = 1;
+            goto free_quarantine_validate_links;
+        }
         // check links are same
         status = strncmp(line, actual_link, strlen(actual_link));
         if (status){

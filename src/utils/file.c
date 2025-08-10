@@ -231,8 +231,33 @@ visible char* getoutput_unshare(char* argv[], int flags) {
 visible bool copy_file(const char *sourceFile, const char *destFile) {
     debug("Copy file: %s -> %s", sourceFile, destFile);
     int source, dest;
-    char buffer[1024*1024]; // Buffer to hold data (1mb)
+    char buffer[1024 * 1024]; // Buffer to hold data (1MB)
     ssize_t bytesRead;
+
+    struct stat statbuf;
+
+    // Check if the source file is a symlink
+    if (lstat(sourceFile, &statbuf) < 0) {
+        perror("Error getting file status");
+        return false;
+    }
+
+    // If it's a symlink, read the target
+    if (S_ISLNK(statbuf.st_mode)) {
+        char target[PATH_MAX];
+        ssize_t len = readlink(sourceFile, target, sizeof(target) - 1);
+        if (len < 0) {
+            perror("Error reading symlink");
+            return false;
+        }
+        target[len] = '\0';
+        // Create a symbolic link
+        if (symlink(target, destFile) == -1) {
+            perror("Error creating symlink");
+            return false;
+        }
+        return true;
+    }
 
     // Open the source file in read-only mode
     source = open(sourceFile, O_RDONLY);
@@ -242,7 +267,7 @@ visible bool copy_file(const char *sourceFile, const char *destFile) {
     }
 
     // Create destination file directory
-    char* dir = strdup(destFile);
+    char *dir = strdup(destFile);
     dirname(dir);
     create_dir(dir);
     free(dir);
@@ -258,7 +283,7 @@ visible bool copy_file(const char *sourceFile, const char *destFile) {
     // Copy the file content
     while ((bytesRead = read(source, buffer, sizeof(buffer))) > 0) {
         ssize_t written = write(dest, buffer, bytesRead);
-        if(written < 0){
+        if (written < 0) {
             perror("Error writing file");
             close(source);
             close(dest);
@@ -271,6 +296,7 @@ visible bool copy_file(const char *sourceFile, const char *destFile) {
     close(dest);
     return true;
 }
+
 
 // Function to copy a directory recursively
 visible bool copy_directory(const char *sourceDir, const char *destDir) {
