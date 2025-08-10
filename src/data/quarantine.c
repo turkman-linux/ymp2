@@ -5,6 +5,7 @@
 #include <config.h>
 #include <core/ymp.h>
 #include <core/variable.h>
+#include <core/logger.h>
 
 #include <data/quarantine.h>
 
@@ -55,6 +56,7 @@ static int quarantine_validate_files(const char* name) {
         strcpy(actual_file, rootfs_path);
         strcat(actual_file, line + 41);
 
+        debug("Validate file: %s\n", actual_file+strlen(rootfs_path));
         // Check if the actual file exists
         if (!isfile(actual_file)) {
             status = 1;
@@ -94,6 +96,8 @@ static int quarantine_validate_links(const char* name){
 
     // Check if the files_path is a valid file
     if (!isfile(links_path)) {
+        free(links_path);
+        free(rootfs_path);
         return 0;
     }
 
@@ -124,9 +128,16 @@ static int quarantine_validate_links(const char* name){
             status = 1;
             goto free_quarantine_validate_links;
         }
+        line[offset+rc+2] = '\0';
+        debug("Validate link: %s => %s\n", line, actual_link+strlen(rootfs_path));
         // check links are same
-        status = strncmp(line, actual_link, strlen(actual_link));
+        status = strncmp(line, line+offset+2, offset);
         if (status){
+            goto free_quarantine_validate_links;
+        }
+        // check link is absolute path
+        if(line[0] == '/'){
+            status = 1;
             goto free_quarantine_validate_links;
         }
     }
