@@ -28,6 +28,8 @@ static int quarantine_validate_files(const char* name) {
 
     // Check if the files_path is a valid file
     if (!isfile(files_path)) {
+        free(files_path);
+        free(rootfs_path);
         return 0;
     }
 
@@ -46,7 +48,7 @@ static int quarantine_validate_files(const char* name) {
         // Check if the line is valid (length should be greater than 40)
         if (strlen(line) <= 40) {
             status = 1;
-            goto free_quarantine_package;
+            goto free_quarantine_validate_files;
         }
 
         // Build the actual file path in quarantine root filesystem
@@ -66,15 +68,68 @@ static int quarantine_validate_files(const char* name) {
 
         // If any status indicates failure, jump to cleanup
         if (status) {
-            goto free_quarantine_package;
+            goto free_quarantine_validate_files;
         }
     }
 
-free_quarantine_package:
+free_quarantine_validate_files:
     // Cleanup: free allocated memory and close the file
     free(files_path);
     free(rootfs_path);
     fclose(files);
+    return status;
+}
+
+static int quarantine_validate_links(const char* name){
+    printf("Validate %s (links)\n", name);
+    // Get the destination directory from global variables
+    char* destdir = variable_get_value(global->variables, "DESTDIR");
+
+    // Initialize status to indicate success or failure
+    int status = 0;
+
+    // Build the path to the files in quarantine
+    char* links_path = build_string("%s/%s/quarantine/links/%s", destdir, STORAGE, name);
+    char* rootfs_path = build_string("%s/%s/quarantine/rootfs/", destdir, STORAGE);
+
+    // Check if the files_path is a valid file
+    if (!isfile(links_path)) {
+        return 0;
+    }
+
+    // Open the files for reading
+    FILE *links = fopen(links_path, "r");
+    char line[1024]; // Buffer for reading lines (max file name length is 1024)
+    char actual_link[1024 + strlen(rootfs_path)]; // Buffer for actual file path (max file name length is 1024)
+
+    // Read each line from the files
+    while (fgets(line, sizeof(line), links)) {
+        // Trim newline characters from the end of the line
+        while (line[strlen(line) - 1] == '\n') {
+            line[strlen(line) - 1] = '\0';
+        }
+        // calcuate offset of link - path seperator
+        size_t offset=0;
+        while(line[offset] && line[offset] != ' ') {
+            offset++;
+        }
+        // Build actual_link
+        strcpy(actual_link, rootfs_path);
+        strcat(actual_link, line+offset+1);
+        // Build link target
+        line[offset+1]='\0';
+        readlink(actual_link, line+offset+2, 1024-(offset+2));
+        // check links are same
+        status = strncmp(line, actual_link, strlen(actual_link));
+        if (status){
+            goto free_quarantine_validate_links;
+        }
+    }
+free_quarantine_validate_links:
+    // Cleanup: free allocated memory and close the file
+    free(links_path);
+    free(rootfs_path);
+    fclose(links);
     return status;
 }
 
@@ -100,6 +155,7 @@ visible bool quarantine_validate() {
             metadatas[i][strlen(metadatas[i]) - 5] = '\0';
             // Add a job to validate the corresponding files
             jobs_add(j, (callback)quarantine_validate_files, basename(metadatas[i]), NULL);
+            jobs_add(j, (callback)quarantine_validate_links, basename(metadatas[i]), NULL);
         }
     }
 
