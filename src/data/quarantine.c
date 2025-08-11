@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sys/stat.h>
+
 #include <config.h>
 #include <core/ymp.h>
 #include <core/variable.h>
@@ -149,6 +151,110 @@ free_quarantine_validate_links:
     return status;
 }
 
+// Function to sync quarantine validated files
+visible int quarantine_sync(const char* name){
+    printf("Sync %s\n", name);
+    int status = 0;
+    // Get the destination directory from global variables
+    char* destdir = variable_get_value(global->variables, "DESTDIR");
+    char* rootfs_path = build_string("%s/%s/quarantine/rootfs/", destdir, STORAGE);
+
+    // Build the path to the files and links in quarantine
+    char* metadata_path = build_string("%s/%s/quarantine/metadata/%s.yaml", destdir, STORAGE, name);
+    char* files_path = build_string("%s/%s/quarantine/files/%s", destdir, STORAGE, name);
+    char* links_path = build_string("%s/%s/quarantine/links/%s", destdir, STORAGE, name);
+
+    // Open the files for reading
+    FILE *links = fopen(links_path, "r");
+    FILE *files = fopen(files_path, "r");
+    char line[1024]; // Buffer for reading lines (max file name length is 1024)
+    char source[1024 + strlen(rootfs_path)]; // Buffer for source path (max file name length is 1024)
+    char target[1024 + strlen(rootfs_path)]; // Buffer for target path (max file name length is 1024)
+
+
+    // Read each line from the files
+    while (fgets(line, sizeof(line), files)) {
+        // Trim newline characters from the end of the line
+        while (line[strlen(line) - 1] == '\n') {
+            line[strlen(line) - 1] = '\0';
+        }
+        line[40] = '/';
+        // Build source & target path
+        strcpy(source, rootfs_path);
+        strcat(source, line+40);
+        strcpy(target, destdir);
+        strcat(target, line+40);
+        debug("file: %s -> %s\n", source, target);
+        // move file
+        status = rename(source, target);
+        // set permission
+        status += chmod(target, 0755);
+        status += chown(target, 0,0);
+        if(status != 0){
+            goto free_quarantine_sync;
+        }
+    }
+
+    // Read each line from the links
+    while (fgets(line, sizeof(line), links)) {
+        // Trim newline characters from the end of the line
+        while (line[strlen(line) - 1] == '\n') {
+            line[strlen(line) - 1] = '\0';
+        }
+        // calcuate offset of link - path seperator
+        size_t offset=0;
+        while(line[offset] && line[offset] != ' ') {
+            offset++;
+        }
+        line[offset]='/';
+        strcpy(source, rootfs_path);
+        strcat(source, line+offset+1);
+        strcpy(target, destdir);
+        strcat(target, line+offset);
+        debug("file: %s -> %s\n", source, target);
+        // move symlink
+        status = rename(source, target);
+        if(status != 0){
+            goto free_quarantine_sync;
+        }
+    }
+
+    // Move files
+    strcpy(target, destdir);
+    strcat(target, "/");
+    strcat(target, STORAGE);
+    strcat(target, "/files/");
+    strcat(target, name);
+    status += rename(files_path, target);
+
+    // Move files
+    strcpy(target, destdir);
+    strcat(target, "/");
+    strcat(target, STORAGE);
+    strcat(target, "/links/");
+    strcat(target, name);
+    status += rename(links_path, target);
+
+    // Move files
+    strcpy(target, destdir);
+    strcat(target, "/");
+    strcat(target, STORAGE);
+    strcat(target, "/metadata/");
+    strcat(target, name);
+    strcat(target, ".yaml");
+    status += rename(metadata_path, target);
+
+    // Cleanup: free memory
+free_quarantine_sync:
+    fclose(files);
+    fclose(links);
+    free(rootfs_path);
+    free(files_path);
+    free(links_path);
+    free(metadata_path);
+    return status;
+}
+
 // Function to validate all quarantine metadata files
 visible bool quarantine_validate() {
     // Get the destination directory from global variables
@@ -180,12 +286,25 @@ visible bool quarantine_validate() {
     bool status = j->failed; // Capture the failure status
     jobs_unref(j); // Unreference the job queue
 
+    // Sync if validation sucessfully
+    if(!status){
+        j = jobs_new();
+        // Iterate through each metadata file
+        for (size_t i = 0; metadatas[i]; i++) {
+            jobs_add(j, (callback)quarantine_sync, basename(metadatas[i]), NULL);
+        }
+        // Run the jobs and check for failures
+        jobs_run(j);
+        status = j->failed;  // Capture the failure status
+        jobs_unref(j); // Unreference the job queue
+    }
+
     // Cleanup: free allocated memory for metadata file names
     for (size_t i = 0; metadatas[i]; i++) {
         free(metadatas[i]);
     }
     free(metadata);
     free(metadatas);
-    return status;
+    return !status;
 }
 
