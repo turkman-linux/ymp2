@@ -38,8 +38,8 @@ static int quarantine_validate_files(const char* name) {
 
     // Open the files for reading
     FILE *files = fopen(files_path, "r");
-    char line[1024 + 41]; // Buffer for reading lines (max file name length is 1024)
-    char actual_file[1024 +	strlen(rootfs_path)]; // Buffer for actual file path (max file name length is 1024)
+    char line[PATH_MAX + 41]; // Buffer for reading lines (max file name length is PATH_MAX)
+    char actual_file[PATH_MAX +	strlen(rootfs_path)]; // Buffer for actual file path (max file name length is PATH_MAX)
 
     // Read each line from the files
     while (fgets(line, sizeof(line), files)) {
@@ -105,8 +105,8 @@ static int quarantine_validate_links(const char* name){
 
     // Open the files for reading
     FILE *links = fopen(links_path, "r");
-    char line[1024]; // Buffer for reading lines (max file name length is 1024)
-    char actual_link[1024 + strlen(rootfs_path)]; // Buffer for actual file path (max file name length is 1024)
+    char line[PATH_MAX]; // Buffer for reading lines (max file name length is PATH_MAX)
+    char actual_link[PATH_MAX + strlen(rootfs_path)]; // Buffer for actual file path (max file name length is PATH_MAX)
 
     // Read each line from the files
     while (fgets(line, sizeof(line), links)) {
@@ -124,7 +124,7 @@ static int quarantine_validate_links(const char* name){
         strcat(actual_link, line+offset+1);
         // Build link target
         line[offset+1]='\0';
-        ssize_t rc = readlink(actual_link, line+offset+2, 1024-(offset+2));
+        ssize_t rc = readlink(actual_link, line+offset+2, PATH_MAX-(offset+2));
         if(rc <0){
             perror("Error reading symlink");
             status = 1;
@@ -167,11 +167,12 @@ visible int quarantine_sync(const char* name){
     // Open the files for reading
     FILE *links = fopen(links_path, "r");
     FILE *files = fopen(files_path, "r");
-    char line[1024]; // Buffer for reading lines (max file name length is 1024)
-    char source[1024 + strlen(rootfs_path)]; // Buffer for source path (max file name length is 1024)
-    char target[1024 + strlen(rootfs_path)]; // Buffer for target path (max file name length is 1024)
+    char line[PATH_MAX]; // Buffer for reading lines (max file name length is PATH_MAX)
+    char source[PATH_MAX + strlen(rootfs_path)]; // Buffer for source path (max file name length is PATH_MAX)
+    char target[PATH_MAX + strlen(rootfs_path)]; // Buffer for target path (max file name length is PATH_MAX)
 
 
+    char tmp[PATH_MAX + strlen(rootfs_path)]; // Temporary buffer
     // Read each line from the files
     while (fgets(line, sizeof(line), files)) {
         // Trim newline characters from the end of the line
@@ -185,6 +186,10 @@ visible int quarantine_sync(const char* name){
         strcpy(target, destdir);
         strcat(target, line+40);
         debug("file: %s -> %s\n", source, target);
+        // create parent directory if not exists
+        strcpy(tmp, target);
+        (void)dirname(tmp);
+        create_dir(tmp);
         // move file
         status = rename(source, target);
         // set permission
@@ -212,6 +217,10 @@ visible int quarantine_sync(const char* name){
         strcpy(target, destdir);
         strcat(target, line+offset);
         debug("file: %s -> %s\n", source, target);
+        // create parent directory if not exists
+        strcpy(tmp, target);
+        (void)dirname(tmp);
+        create_dir(tmp);
         // move symlink
         status = rename(source, target);
         if(status != 0){
@@ -308,3 +317,14 @@ visible bool quarantine_validate() {
     return !status;
 }
 
+
+visible void quarantine_reset(){
+    char* destdir = variable_get_value(global->variables, "DESTDIR");
+    char* path = build_string("%s/%s/quarantine/", destdir, STORAGE);
+    if(isdir(path)){
+        remove_all(path);
+    }
+    create_dir(path);
+    // cleanup
+    free(path);
+}
