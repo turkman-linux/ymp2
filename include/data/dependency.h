@@ -26,6 +26,8 @@
  */
 Package** resolve_dependency(char* name);
 
+Package** resolve_reverse_dependency(char* name);
+
 /**
  * @brief Loads repositories for dependency resolution.
  *

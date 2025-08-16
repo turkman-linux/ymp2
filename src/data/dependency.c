@@ -64,6 +64,32 @@ static void resolve_dependency_fn(char* name, bool emerge) {
 
 }
 
+// Recursive function to resolve dependencies for a given package name
+static void resolve_reverse_dependency_fn(char* name) {
+    // If the package is already in the cache, return to avoid reprocessing
+    if (array_has(cache, name)) {
+        return;
+    }
+
+    // Add the package to the cache to avoid reprocessing in the future
+    array_add(cache, name);
+
+    // Log the current package being searched and the depth level
+    info("Search: %s depth:%d\n", name, depth);
+
+    // load installed package object
+    Package* pi = package_new();
+    char* metadata_dir = build_string("%s/%s/metadata", get_value("DESTDIR"), STORAGE);
+    char** packages = listdir(metadata_dir);
+    for(size_t i=0; packages[i]; i++){
+        if(!endswith(packages[i], ".yaml")){
+            continue;
+        }
+        puts(packages[i]);
+        package_load_from_installed(pi, packages[i]);
+    }
+}
+
 // Function to initialize the resolution process
 visible Repository** resolve_begin() {
 
@@ -139,3 +165,22 @@ visible Package** resolve_dependency(char* name) {
     return resolved; // Return the array of resolved dependencies
 }
 
+
+// Public function to resolve reverse dependencies for a given package name
+visible Package** resolve_reverse_dependency(char* name) {
+    size_t begin_time = get_epoch();
+    if(resolved != NULL){
+        free(resolved);
+    }
+    if(repos == NULL){
+        print("Dependencies resolve failed\n");
+        return NULL; // Dont resolve package if repository list is empty
+    }
+    resolved = malloc(sizeof(Package*)* 1024); // Create a new array for resolved packages
+    resolved_count = 0; // reset resolve count
+    resolved_total = 0; // reset resolve total
+    cache = array_new(); // Create a new array for caching resolved packages
+    info("Reverse dependencies resolved in %s µs\n", get_epoch() - begin_time);
+    resolve_reverse_dependency_fn(name);
+    return resolved; // Return the array of resolved dependencies
+}
