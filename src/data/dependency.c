@@ -84,7 +84,9 @@ static void resolve_reverse_dependency_fn(char* name) {
         resolved = realloc(resolved, sizeof(Package*)*resolved_total);
     }
     Package* pkg = package_new();
-    package_load_from_installed(pkg, name);
+    if(!package_load_from_installed(pkg, name)){
+        return;
+    }
     // Add the resolved package to the list of resolved packages
     resolved[resolved_count] = pkg;
     resolved_count++;
