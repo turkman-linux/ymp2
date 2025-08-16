@@ -12,8 +12,9 @@
 
 static int remove_main(void* args){
     char** res = (char**)args;
-    for(size_t i=0; res[i];i++){
-        print("%s\n", res[i]);
+    Package **pkgs = resolve_reverse_dependency(res[0]);
+    for(size_t j=0; pkgs[j]; j++){
+        print("%s\n", pkgs[j]->name);
     }
     return 0;
 }

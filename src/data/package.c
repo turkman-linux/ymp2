@@ -277,13 +277,21 @@ visible bool package_load_from_installed(Package* pkg, const char* name){
     pkg->is_virtual = true;
     // read metadata
     char* manifest = readfile(meta);
-    char* ymp_data = yaml_get_area(manifest, "ymp");
-    char* data = yaml_get_area(ymp_data, "package");
+    pkg->metadata = yaml_get_area(manifest, "ymp");
+    // Check if the metadata contains a "source" area
+    if(yaml_has_area(pkg->metadata, "source")){
+        pkg->is_source = true; // Mark package as a source package
+        pkg->metadata = yaml_get_area(pkg->metadata, "source"); // Get the "source" area
+    } else if(yaml_has_area(pkg->metadata, "package")){
+        pkg->is_source = false; // Mark package as a regular package
+        pkg->metadata = yaml_get_area(pkg->metadata, "package"); // Get the "package" area
+    } else {
+        error_add("Metadata is invalid"); // Handle invalid metadata
+    }
     // load virtual installed package
-    package_load_from_metadata(pkg, data, false);
+    package_load_from_metadata(pkg, pkg->metadata, pkg->is_source);
 free_package_load_from_installed:
     free(meta);
-    free(ymp_data);
     free(manifest);
     // dont free data beacuse of used as pkg->metadata;
     return is_package;

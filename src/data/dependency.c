@@ -77,17 +77,40 @@ static void resolve_reverse_dependency_fn(char* name) {
     // Log the current package being searched and the depth level
     info("Search: %s depth:%d\n", name, depth);
 
+
+    // Check list length reallocate if needed
+    if(resolved_count+1 <= resolved_total) {
+        resolved_total += 1024;
+        resolved = realloc(resolved, sizeof(Package*)*resolved_total);
+    }
+    Package* pkg = package_new();
+    package_load_from_installed(pkg, name);
+    // Add the resolved package to the list of resolved packages
+    resolved[resolved_count] = pkg;
+    resolved_count++;
+
     // load installed package object
-    Package* pi = package_new();
     char* metadata_dir = build_string("%s/%s/metadata", get_value("DESTDIR"), STORAGE);
     char** packages = listdir(metadata_dir);
+    depth++; // Increase the depth for the current package
     for(size_t i=0; packages[i]; i++){
         if(!endswith(packages[i], ".yaml")){
             continue;
         }
-        puts(packages[i]);
+        Package* pi = package_new();
+        packages[i][strlen(packages[i])-5] = '\0';
         package_load_from_installed(pi, packages[i]);
+        for(size_t j = 0; pi->dependencies[j];j++){
+            if(iseq(name, pi->dependencies[j])){
+                resolve_reverse_dependency_fn(packages[i]);
+            }
+        }
     }
+    depth--; // Decrease the depth after processing all dependencies
+
+    // Log the resolved package and current depth
+    info("Resolved: %s depth:%d\n", name, depth);
+
 }
 
 // Function to initialize the resolution process
@@ -172,15 +195,12 @@ visible Package** resolve_reverse_dependency(char* name) {
     if(resolved != NULL){
         free(resolved);
     }
-    if(repos == NULL){
-        print("Dependencies resolve failed\n");
-        return NULL; // Dont resolve package if repository list is empty
-    }
     resolved = malloc(sizeof(Package*)* 1024); // Create a new array for resolved packages
     resolved_count = 0; // reset resolve count
     resolved_total = 0; // reset resolve total
     cache = array_new(); // Create a new array for caching resolved packages
     info("Reverse dependencies resolved in %s µs\n", get_epoch() - begin_time);
     resolve_reverse_dependency_fn(name);
+    resolved[resolved_count] = NULL;
     return resolved; // Return the array of resolved dependencies
 }
