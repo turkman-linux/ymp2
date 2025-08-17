@@ -62,8 +62,6 @@ int quarantine_sync(const char* name);
  * previously quarantined packages to be re-evaluated for installation or use,
  * restoring their original state.
  *
- * @return void This function does not return a value.
- *
  * @note This function is essential for managing package states, especially
  *       when a package has been incorrectly quarantined or after a security
  *       incident has been resolved.
