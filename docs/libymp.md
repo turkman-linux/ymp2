@@ -62,5 +62,3 @@ If you encounter issues during compilation, consider the following:
 - Verify that you are using the correct compiler flags.
 - Review any error messages for clues about what went wrong.
 
-## Conclusion
-Compiling source code with the **libymp** library is straightforward if you follow the outlined steps. By ensuring that the library is properly installed and using the correct compiler flags, you can successfully build applications that leverage the functionalities provided by **libymp**.
