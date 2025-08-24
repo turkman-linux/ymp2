@@ -92,6 +92,7 @@ void install_init(OperationManager* manager){
     Operation op;
     op.name = "install";
     op.alias = "it:add:merge";
+    op.description = "Install package";
     op.min_args = 1;
     op.call = (callback)install_main;
     operation_register(manager, op);

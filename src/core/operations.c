@@ -71,11 +71,12 @@ int visible operation_main(OperationManager *manager, const char* name, void* ar
         if (manager->operations[i].alias) {
             char** alias = split(manager->operations[i].alias, ":");
             for(size_t a=0; alias[a]; a++){
-                if(strcmp(name, alias[a])){
+                if(strcmp(alias[a], name) == 0){
                     goto operation_main_no_call;
                 }
             }
         }
+        debug("%s %s\n", manager->operations[i].name, name);
         if (strcmp(manager->operations[i].name, name) == 0) {
 operation_main_no_call:
             if(len < manager->operations[i].min_args){

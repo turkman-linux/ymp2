@@ -44,7 +44,8 @@ typedef int (*callback)(void*, ...);
  */
 typedef struct {
     callback call;      /**< Pointer to the callback function for the operation. */
-    char* alias;        /** Operation name alias. <*/
+    char* alias;        /**< Operation name alias. <*/
+    char* description;  /**< Operation description */
     size_t min_args;    /**< Minimum argument length **/
     char* name;         /**< Name of the operation, used for identification. */
 } Operation;

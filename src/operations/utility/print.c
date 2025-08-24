@@ -13,6 +13,7 @@ void print_init(OperationManager* manager){
     Operation op;
     op.name = "print";
     op.alias = "echo";
+    op.description = "Print message";
     op.min_args = 0;
     op.call = (callback)print;
     operation_register(manager, op);
