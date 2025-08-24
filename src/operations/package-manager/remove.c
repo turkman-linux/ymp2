@@ -18,6 +18,22 @@
 
 #include <config.h>
 
+static void purge_empty_directories(const char* path){
+    char dir[PATH_MAX];
+    strcpy(dir, path);
+    size_t len = strlen(path);
+    // remove parent directories until failture
+    for(int i=len-1; i>=0; i--){
+        if(dir[i] == '/'){
+            dir[i] = '\0';
+            debug("Purge: %s\n", dir);
+            if(rmdir(dir) != 0){
+                return;
+            }
+        }
+    }
+}
+
 static int remove_package(Package* pi){
     // Get the destination directory from global variables
     char* destdir = variable_get_value(global->variables, "DESTDIR");
@@ -81,6 +97,9 @@ static int remove_package(Package* pi){
              goto free_remove_package;
        }
 
+    }
+    for (size_t i=0; i<len;i++){
+        purge_empty_directories(items[i]);
     }
     // remove files links metadata
     if(unlink(files_path) < 0){
