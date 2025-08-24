@@ -119,12 +119,13 @@ free_remove_package:
     return status;
 }
 
-static int remove_main(void* args){
-    char** res = (char**)args;
-    Package **pkgs = resolve_reverse_dependency(res[0]);
+static int remove_main(char** args){
     jobs *j = jobs_new();
-    for(size_t i=0; pkgs[i]; i++){
-        jobs_add(j, (callback) remove_package, (void*)pkgs[i], NULL);
+    for(size_t r=0; args[r]; r++){
+        Package **pkgs = resolve_reverse_dependency(res[0]);
+        for(size_t i=0; pkgs[i]; i++){
+            jobs_add(j, (callback) remove_package, (void*)pkgs[i], NULL);
+        }
     }
     jobs_run(j);
     if(j->failed){

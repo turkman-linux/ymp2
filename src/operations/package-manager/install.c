@@ -48,15 +48,17 @@ static int install_main(char** args){
     jobs* download_jobs = jobs_new();
     jobs* install_jobs = jobs_new();
 
-    // Resolve dependencies
-    Package** res = resolve_dependency(args[0]);
-    // Define jobs
-    for(size_t i=0; res[i];i++){
-        if(package_is_installed(res[i])){
-            continue;
+    for(size_t r=0; args[r]; r++){
+        // Resolve dependencies
+        Package** res = resolve_dependency(args[0]);
+        // Define jobs
+        for(size_t i=0; res[i];i++){
+            if(package_is_installed(res[i])){
+                continue;
+            }
+            jobs_add(download_jobs, (callback)download_cb, res[i], (void*)i+1);
+            jobs_add(install_jobs, (callback)install_cb, res[i], (void*)i+1);
         }
-        jobs_add(download_jobs, (callback)download_cb, res[i], (void*)i+1);
-        jobs_add(install_jobs, (callback)install_cb, res[i], (void*)i+1);
     }
     // Download packages
     jobs_run(download_jobs);
