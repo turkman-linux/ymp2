@@ -284,16 +284,20 @@ visible char** split(const char* data, const char* f) {
     size_t s=strlen(f);
     for (i=0; data[i];i++){
         if (strncmp(data+i, f,  s) == 0){
-            char word[i - (cur+s) + 1];
+            char word[i - cur + 1];
             strncpy(word, &data[cur], i-cur);
+            word[i-cur] = '\0';
             array_add(a, word);
             cur=i+s;
         }
     }
-    char word[i - (cur+s) + 1];
+    char word[i - cur + 1];
     strncpy(word, &data[cur], i-cur);
+    word[i-cur] = '\0';
     array_add(a, word);
-    return array_get(a, &i);
+    char** ret = array_get(a, &i);
+    free(a); // unref will remove memory and we dont want it
+    return ret;
 }
 
 
