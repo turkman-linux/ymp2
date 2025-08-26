@@ -301,7 +301,7 @@ visible char** split(const char* data, const char* f) {
 }
 
 
-char* strip(const char* str) {
+visible char* strip(const char* str) {
     if (str == NULL) {
         return NULL; // Handle NULL input
     }
