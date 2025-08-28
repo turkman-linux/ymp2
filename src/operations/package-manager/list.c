@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <core/ymp.h>
 #include <core/variable.h>
+#include <core/logger.h>
 
 #include <data/repository.h>
 #include <data/dependency.h>
@@ -19,7 +21,13 @@ static void list_available(){
         for(size_t j=0; j< repos[i]->package_count;j++){
             const char* name = repos[i]->packages[j]->name;
             const char* desc = yaml_get_value(repos[i]->packages[j]->metadata, "description");
-            printf("%s %s\n", name, desc);
+            char* meta = build_string("%s/%s/metadata/%s.yaml", get_value("DESTDIR"), STORAGE, name);
+            if(isfile(meta)){
+                printf("%s %s\n", colorize(GREEN,name), desc);
+            } else {
+                printf("%s %s\n", colorize(RED,name), desc);
+            }
+            free(meta);
         }
         i++;
     }

@@ -5,9 +5,11 @@
 #include <sys/file.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 #include <utils/error.h>
 
@@ -31,12 +33,37 @@ visible void single_instance(){
         }
     }
 }
+visible char* which(char* cmd){
+    char* fullPath = getenv("PATH");
+
+    struct stat buffer;
+    int exists;
+    char* fileOrDirectory = cmd;
+    char *fullfilename = calloc(1024, sizeof(char));
+
+    char *token = strtok(fullPath, ":");
+
+    /* walk through other tokens */
+    while( token != NULL ){
+        sprintf(fullfilename, "%s/%s", token, fileOrDirectory);
+        exists = stat( fullfilename, &buffer );
+        if ( exists == 0 && ( S_IFREG & buffer.st_mode ) ) {
+            char ret[strlen(fullfilename)];
+            strcpy(ret,fullfilename);
+            return (char*)fullfilename;
+        }
+
+        token = strtok(NULL, ":"); /* next token */
+    }
+    return (char*)cmd;
+}
+
 
 visible int run_args(char *args[]) {
     pid_t pid = fork();
     int status = 0;
     if (pid == 0) {
-        execv(args[0], args);
+        execv(which(args[0]), args);
         perror("execv failed");
         exit(EXIT_FAILURE);
     } else {

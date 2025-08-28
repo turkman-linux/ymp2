@@ -5,6 +5,7 @@
 #include <utils/string.h>
 #include <utils/file.h>
 #include <utils/fetcher.h>
+#include <utils/gpg.h>
 
 #include <config.h>
 
@@ -12,19 +13,31 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int repo_update_op(const char* uri){
+static int repo_update_op(const char* uri, const char* repo_name){
     char* metadata = str_replace(uri, "$uri", "ymp-index.yaml");
+    char* metadata_gpg = str_replace(uri, "$uri", "ymp-index.yaml.gpg");
     char* name = str_replace(metadata, "/","-");
     char* target = build_string("%s/%s/index/%s", get_value("DESTDIR"), STORAGE, name);
+    char* target_gpg = build_string("%s/%s/index/%s.gpg", get_value("DESTDIR"), STORAGE, name);
+    char* keyring = build_string("%s/%s/gpg/%s.gpg", get_value("DESTDIR"), STORAGE, repo_name);
     debug("update: %s => %s\n", name, target);
     int status = 0;
     if(!fetch(metadata, target)){
-        status = 1;
+        status += 1;
+    }
+    if(!fetch(metadata_gpg, target_gpg)){
+        status += 1;
+    }
+    if(!verify_file(target, keyring)){
+        status += 1;
     }
     // free memory
     free(target);
+    free(target_gpg);
     free(name);
     free(metadata);
+    free(metadata_gpg);
+    free(keyring);
     return status;
 }
 
@@ -42,7 +55,7 @@ static int repo_update() {
         char* repo_ctx = trim(readfile(repo_file_path));
         char** repo_urls = split(repo_ctx, "\n");
         for(size_t i=0; repo_urls[i]; i++){
-            status += repo_update_op(repo_urls[i]);
+            status += repo_update_op(repo_urls[i], repos[r]);
             free(repo_urls[i]);
         }
         // free memory
