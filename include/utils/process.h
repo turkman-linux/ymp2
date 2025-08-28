@@ -32,4 +32,26 @@ size_t get_epoch();
  */
 void single_instance();
 
+/**
+ * @brief Executes a command with the given arguments.
+ *
+ * This function takes an array of strings representing command-line arguments
+ * and executes the corresponding command. It is typically used to run external
+ * programs or scripts from within a C program.
+ *
+ * @param args An array of character pointers (strings) representing the command
+ *             and its arguments. The first element should be the command to
+ *             execute, followed by its arguments. The last element must be NULL
+ *             to indicate the end of the arguments.
+ *
+ * @return int Returns 0 on success, or a negative value on failure. The specific
+ *             error code can be determined by the implementation.
+ *
+ * @note Ensure that the `args` array is properly terminated with a NULL pointer.
+ *       This function may invoke system calls that can fail, so error handling
+ *       should be implemented as needed.
+ *
+ */
+int run_args(char *args[]);
+
 #endif

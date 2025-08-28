@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <sys/file.h>
 #include <errno.h>
+#include <stdio.h>
+
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include <utils/error.h>
 
@@ -26,4 +30,17 @@ visible void single_instance(){
             exit(31);
         }
     }
+}
+
+visible int run_args(char *args[]) {
+    pid_t pid = fork();
+    int status = 0;
+    if (pid == 0) {
+        execv(args[0], args);
+        perror("execv failed");
+        exit(EXIT_FAILURE);
+    } else {
+        waitpid(pid, &status, 0);
+    }
+    return status;
 }
