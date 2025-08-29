@@ -105,8 +105,10 @@ visible void package_load_from_metadata(Package* pkg, const char* metadata, bool
     pkg->version = yaml_get_value(pkg->metadata, "version");
     pkg->release = atoi(yaml_get_value(pkg->metadata, "release"));
     int dep_count = 0;
+    int grp_count = 0;
     pkg->dependencies = yaml_get_array(pkg->metadata, "depends", &dep_count);
-    debug("package:%s - %s - %d\n", pkg->name, pkg->version, dep_count);
+    pkg->groups = yaml_get_array(pkg->metadata, "groups", &grp_count);
+    debug("package:%s - %s - %d - %d\n", pkg->name, pkg->version, dep_count, grp_count);
 
 }
 

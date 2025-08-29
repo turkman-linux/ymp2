@@ -19,6 +19,7 @@
 typedef struct {
     const char* name; /**< Package name */
     char** dependencies; /**< List of package dependencies */
+    char** groups; /**< List of package groups */
     const char* version; /**< Package version string */
     int release; /**< Package release number */
     bool is_source; /**< Indicates if the package is a source package */
