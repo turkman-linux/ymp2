@@ -34,14 +34,30 @@ static void list_available(){
     resolve_end(repos);
 }
 
-void list_installed(){
-
+static void list_installed(){
+    char* destdir = get_value("DESTDIR");
+    char* metadata = build_string("%s/%s/metadata/", destdir, STORAGE);
+    char** meta = listdir(metadata);
+    for(size_t i=0; meta[i]; i++){
+        if(!endswith(meta[i], ".yaml")){
+            continue;
+        }
+        meta[i][strlen(meta[i])-5] = '\0';
+        Package *pi = package_new();
+        bool load = package_load_from_installed(pi, meta[i]);
+        if(load){
+            const char* desc = yaml_get_value(pi->metadata, "description");
+            printf("%s %s\n", colorize(GREEN,pi->name), desc);
+        }
+    }
 }
 
 static int list(void** args){
     (void)args;
     if (iseq(get_value("available"), "true")){
         list_available();
+    } else if (iseq(get_value("installed"), "true")){
+        list_installed();
     }
     return 0;
 }

@@ -280,6 +280,10 @@ visible bool package_load_from_installed(Package* pkg, const char* name){
     pkg->is_virtual = true;
     // read metadata
     char* manifest = readfile(meta);
+    if(!manifest){
+        is_package = false;
+        goto free_package_load_from_installed;
+    }
     pkg->metadata = yaml_get_area(manifest, "ymp");
     // Check if the metadata contains a "source" area
     if(yaml_has_area(pkg->metadata, "source")){
