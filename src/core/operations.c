@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sys/stat.h>
+
 #include <core/logger.h>
 #include <core/operations.h>
 
@@ -72,13 +74,13 @@ int visible operation_main(OperationManager *manager, const char* name, void* ar
             char** alias = split(manager->operations[i].alias, ":");
             for(size_t a=0; alias[a]; a++){
                 if(strcmp(alias[a], name) == 0){
-                    goto operation_main_no_call;
+                    goto operation_main_on_call;
                 }
             }
         }
         debug("%s %s\n", manager->operations[i].name, name);
         if (strcmp(manager->operations[i].name, name) == 0) {
-operation_main_no_call:
+operation_main_on_call:
             if(len < manager->operations[i].min_args){
                 debug("Min arguments error\n");
                 status = 1;
@@ -86,12 +88,16 @@ operation_main_no_call:
             }
             debug("Running:%s\n", name);
             priv->running = true;
+            mode_t u = umask(0022);
             status = manager->operations[i].call(args);
+            (void)umask(u);
             priv->running = false;
             if(status > 0){
 operation_main_on_error:
                 if (manager->on_error.call){
+                    mode_t ue = umask(0022);
                     manager->on_error.call(NULL);
+                    (void)umask(ue);
                 }
                 break;
             }
