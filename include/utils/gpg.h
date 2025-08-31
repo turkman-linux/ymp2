@@ -28,7 +28,7 @@ void set_gpg_repicent(char* repicent);
  * @param path The path to the file to be signed.
  * @return true if the file was successfully signed, false otherwise.
  */
-bool sign_file(const char *path);
+bool gpg_sign_file(const char *path);
 
 /**
  * @brief Exports a GPG public key to a file.

@@ -11,6 +11,7 @@
 #include <utils/gpg.h>
 #include <utils/hash.h>
 #include <utils/jobs.h>
+#include <utils/gpg.h>
 #include <utils/archive.h>
 
 #include <config.h>
@@ -174,6 +175,9 @@ static int repo_index(const char* path){
         fprintf(f, "    size: %ld\n", out[i].size);
         fprintf(f, "    uri: %s\n", out[i].uri);
     }
+    char* repicent = get_value("repicent");
+    set_gpg_repicent(repicent);
+    gpg_sign_file(index_path);    
 repo_index_free:
     fclose(f);
     // cleanup memory

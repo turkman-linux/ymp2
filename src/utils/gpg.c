@@ -19,7 +19,7 @@ visible void set_gpg_repicent(char* repicent){
     gpg_repicent = repicent;
 }
 
-visible bool sign_file(const char *path) {
+visible bool gpg_sign_file(const char *path) {
     if (!isfile(path)) {
         return false;
     }

@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     set_gpg_repicent((char*)repicent);
 
     // Sign the file
-    if (sign_file(file_to_sign)) {
+    if (gpg_sign_file(file_to_sign)) {
         printf("Successfully signed the file: %s\n", file_to_sign);
     } else {
         printf("Failed to sign the file: %s\n", file_to_sign);
