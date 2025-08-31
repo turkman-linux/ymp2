@@ -5,9 +5,11 @@
 #include <data/package.h>
 
 #include <utils/string.h>
+#include <utils/process.h>
 #include <utils/file.h>
 #include <utils/fetcher.h>
 #include <utils/gpg.h>
+#include <utils/hash.h>
 #include <utils/jobs.h>
 #include <utils/archive.h>
 
@@ -101,7 +103,15 @@ repo_add_free:
     return status;
 }
 
-static int repo_index_op(char* file, char** out){
+typedef struct {
+    char* metadata;
+    char* sha256;
+    char* md5;
+    uint64_t size;
+    char* uri;
+} PkgIndex;
+
+static int repo_index_op(char* file, PkgIndex* i){
     int status = 1;
     Archive *a = archive_new();
     archive_load(a, file);
@@ -110,7 +120,10 @@ static int repo_index_op(char* file, char** out){
         status = 1;
         goto repo_index_op_free;
     }
-    *out = metadata+5;
+    i->md5 = calculate_md5(file);
+    i->sha256 = calculate_sha256(file);
+    i->metadata = metadata+5;
+    i->size = filesize(file);
 repo_index_op_free:
     archive_unref(a);
     return status;
@@ -129,7 +142,7 @@ static int repo_index(const char* path){
     // calculate len
     size_t len = 0;
     for(len=0; files[len]; len++){}
-    char* out[len];
+    PkgIndex out[len];
     // scan all files
     size_t cur = 0;
     for(size_t i=0; files[i]; i++){
@@ -137,6 +150,7 @@ static int repo_index(const char* path){
         if(!endswith(files[i], ".ymp")){
             continue;
         }
+        out[cur].uri = files[i]+strlen(path);
         jobs_add(j, (callback)repo_index_op, files[i], &out[cur]);
         cur++;
     }
@@ -151,17 +165,22 @@ static int repo_index(const char* path){
         goto repo_index_free;
     }
     fprintf(f, "index:\n");
-    fprintf(f, "  name: ");
-    fprintf(f, name);
-    fprintf(f, "\n");
+    fprintf(f, "  name: %s\n", name);
+    fprintf(f, "  date: %ld\n", get_epoch());
     for(size_t i=0; i<cur; i++){
-        fprintf(f, out[i]);
+        fprintf(f, out[i].metadata);
+        fprintf(f, "    md5: %s\n", out[i].md5);
+        fprintf(f, "    sha256: %s\n", out[i].sha256);
+        fprintf(f, "    size: %ld\n", out[i].size);
+        fprintf(f, "    uri: %s\n", out[i].uri);
     }
 repo_index_free:
     fclose(f);
     // cleanup memory
     for(size_t i=0; i<cur; i++){
-        free(out[i]-5);
+        free(out[i].metadata-5);
+        free(out[i].sha256);
+        free(out[i].md5);
     }
     for(size_t i=0; files[i]; i++){
         free(files[i]);
