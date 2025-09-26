@@ -136,7 +136,7 @@ static int repo_index(const char* path){
         printf("repo name is undefined. Use --name=xxx\n");
         return 1;
     }
-    //bool move = iseq(get_value("move"), "true");
+    // TODO: add move parameter
     int status = 0;
     char** files = find(path);
     jobs *j = jobs_new();
@@ -214,13 +214,13 @@ repo_del_free:
 }
 
 static int repo_main(void** args) {
-    if (strcmp(get_value("update"), "true")==0){
+    if (get_bool("update")){
         return repo_update(args);
-    } else if (strcmp(get_value("add"), "true")==0){
+    } else if (get_bool("add")){
         return repo_add(((char**)args)[0]);
-    } else if (strcmp(get_value("remove"), "true")==0){
+    } else if (get_bool("remove")){
         return repo_del();
-    } else if (strcmp(get_value("index"), "true")==0){
+    } else if (get_bool("index")){
         return repo_index(((char**)args)[0]);
     }
     return 0;

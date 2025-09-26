@@ -61,9 +61,9 @@ static void list_installed(){
 
 static int list(void** args){
     (void)args;
-    if (iseq(get_value("available"), "true")){
+    if (get_bool("available")){
         list_available();
-    } else if (iseq(get_value("installed"), "true")){
+    } else if (get_bool("installed")){
         list_installed();
     }
     return 0;

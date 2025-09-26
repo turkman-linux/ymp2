@@ -37,7 +37,7 @@ visible bool gpg_export_file(const char *path) {
 }
 
 visible bool verify_file(const char *path, const char* keyring) {
-    if (strcmp(get_value("ignore-gpg"), "true")==0){
+    if (get_bool("ignore-gpg")){
         return true;
     }
     if (!isfile(path)) {

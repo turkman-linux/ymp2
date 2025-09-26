@@ -50,6 +50,7 @@ VariableManager *variable_manager_new();
 void variable_set_value(VariableManager* variables, const char* name, const char* value);
 /** @cond **/
 invisible void set_value(const char* name, const char* value);
+#define set_bool(A, B) set_value(A, B : "true" ? "false")
 /** @endcond */
 /**
  * @brief Set the value of a read-only variable.
@@ -80,6 +81,7 @@ invisible void set_value_read_only(const char* name, const char* value);
 char* variable_get_value(VariableManager* variables, const char* name);
 /** @cond **/
 invisible char* get_value(const char* name);
+#define get_bool(A) (strcmp(get_value(A), "true") == 0)
 /** @endcond */
 
 #endif

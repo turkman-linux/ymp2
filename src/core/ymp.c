@@ -131,8 +131,8 @@ visible void ymp_add(Ymp* ymp, const char* name, void* args) {
 }
 
 static void ymp_set_logger_status(){
-    logger_set_status(DEBUG, iseq(get_value("debug"), "true"));
-    logger_set_status(INFO, iseq(get_value("verbose"), "true"));
+    logger_set_status(DEBUG, get_bool("debug"));
+    logger_set_status(INFO, get_bool("verbose"));
 }
 
 visible int ymp_run(Ymp* ymp){

@@ -75,7 +75,7 @@ int visible operation_main(OperationManager *manager, const char* name, void* ar
             char** alias = split(manager->operations[i].alias, ":");
             for(size_t a=0; alias[a]; a++){
                 if(strcmp(alias[a], name) == 0){
-                    if(iseq(get_value("help"), "true")){
+                    if(get_bool("help")){
                         char* fargs[] = {(char*)name, NULL};
                         return operation_main(manager, (char*)"help", (void*)fargs);
                     }
