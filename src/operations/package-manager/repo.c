@@ -215,7 +215,7 @@ repo_del_free:
 
 static int repo_main(void** args) {
     if (get_bool("update")){
-        return repo_update(args);
+        return repo_update();
     } else if (get_bool("add")){
         return repo_add(((char**)args)[0]);
     } else if (get_bool("remove")){
