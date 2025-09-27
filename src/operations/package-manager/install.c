@@ -95,5 +95,9 @@ void install_init(OperationManager* manager){
     op.description = "Install package";
     op.min_args = 1;
     op.call = (callback)install_main;
+    op.help = help_new();
+    help_add_parameter(op.help, "--ignore-dependency", "disable dependency check");
+    help_add_parameter(op.help, "--reinstall", "reinstall if already installed");
+    help_add_parameter(op.help, "--no-emerge", "use binary package");
     operation_register(manager, op);
 }

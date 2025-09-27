@@ -5,10 +5,40 @@
 #include <core/operations.h>
 #include <core/logger.h>
 
+#include <utils/string.h>
+
 extern Ymp* global;
 
-static int help_main(void* args){
-    (void)args;
+static void help_print(Operation op){
+    print("%s:%s\n", colorize(GREEN,"Aliases"), op.alias);
+    print("%s: ymp %s [OPTION]... [ARGS]...\n", colorize(GREEN,"Usage"), op.name);
+    print("%s\n", op.description);
+    print("%s:\n", colorize(GREEN, "Options"));
+    for(size_t i=0; i < op.help->cur; i++){
+        print("  %s\n", op.help->parameters[i]);
+    }
+}
+
+static int help_op(char* name){
+    OperationManager *manager = global->manager;
+    for(size_t i=0; i < manager->length; i++){
+        Operation op = manager->operations[i];
+        if(iseq(name, op.name)){
+            help_print(op);
+        }
+    }
+    return 0;
+}
+
+static int help_main(char** args){
+    int cnt = 0;
+    for(size_t i=0; args[i]; i++) {
+        help_op(args[i]);
+        cnt++;
+    }
+    if(cnt){
+        return 0;
+    }
     OperationManager *manager = global->manager;
     for(size_t i=0; i < manager->length; i++){
         Operation op = manager->operations[i];

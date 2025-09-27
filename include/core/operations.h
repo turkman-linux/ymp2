@@ -2,6 +2,8 @@
 #define _operations_h
 #include <stddef.h>
 
+#include <core/help.h>
+
 /**
  * @file operations.h
  * @brief Header file for operation registration and callback handling.
@@ -48,6 +50,7 @@ typedef struct {
     char* description;  /**< Operation description */
     size_t min_args;    /**< Minimum argument length **/
     char* name;         /**< Name of the operation, used for identification. */
+    Help *help;
 } Operation;
 
 /**

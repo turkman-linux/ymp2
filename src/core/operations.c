@@ -75,10 +75,6 @@ int visible operation_main(OperationManager *manager, const char* name, void* ar
             char** alias = split(manager->operations[i].alias, ":");
             for(size_t a=0; alias[a]; a++){
                 if(strcmp(alias[a], name) == 0){
-                    if(get_bool("help")){
-                        char* fargs[] = {(char*)name, NULL};
-                        return operation_main(manager, (char*)"help", (void*)fargs);
-                    }
                     goto operation_main_on_call;
                 }
             }
@@ -86,6 +82,11 @@ int visible operation_main(OperationManager *manager, const char* name, void* ar
         debug("%s %s\n", manager->operations[i].name, name);
         if (strcmp(manager->operations[i].name, name) == 0) {
 operation_main_on_call:
+            // --help check
+            if((strcmp(name, "help") != 0) && get_bool("help")){
+                char* fargs[] = {manager->operations[i].name, NULL};
+                return operation_main(manager, (char*)"help", (void*)fargs);
+            }
             if(len < manager->operations[i].min_args){
                 debug("Min arguments error\n");
                 status = 1;
