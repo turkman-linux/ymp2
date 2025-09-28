@@ -25,11 +25,11 @@ char* readfile(const char *path);
 /**
  * @brief Compares two strings for equality.
  *
- * @param str1 The first string to compare.
- * @param str2 The second string to compare.
- * @return 1 if the strings are equal, 0 otherwise.
+ * @param A The first string to compare.
+ * @param B The second string to compare.
+ * @return true if the strings are equal, false otherwise.
  */
-int iseq(char* str1, char* str2);
+#define iseq(A, B) (strcmp(A, B) == 0)
 
 /**
  * @brief Counts the number of tab characters in a given data string.

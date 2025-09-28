@@ -2,10 +2,13 @@
 
 #include <stdio.h>
 static int print(void** args) {
-    for(size_t i=0; args[i]; i++){
+    size_t i=0;
+    for(i=0; args[i]; i++){
         printf("%s ", (char*)args[i]);
     }
-    printf("\n");
+    if(i>0){
+        printf("\n");
+    }
     return 0;
 }
 

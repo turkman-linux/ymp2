@@ -43,10 +43,6 @@ visible char* readfile(const char *path) {
     return data;
 }
 
-visible int iseq(char* str1, char* str2){
-    return strcmp(str1,str2) == 0;
-}
-
 visible long count_tab(char* data){
     int cnt = 0;
     while (*data == ' ') {

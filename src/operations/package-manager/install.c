@@ -39,6 +39,9 @@ static int install_cb(Package*p, int num){
         print("%s: %s\n", colorize(RED, "Install Failed"), p->name);
         return 1;
     }
+    if(get_bool("sync-single")){
+        return quarantine_validate();
+    }
     return 0;
 }
 
@@ -47,6 +50,10 @@ static int install_main(char** args){
     Repository **repos = resolve_begin();
     jobs* download_jobs = jobs_new();
     jobs* install_jobs = jobs_new();
+    // single thread install if sync single or source package installation
+    if(get_bool("sync-single") || !get_bool("no-emerge")){
+        install_jobs->parallel = 1;
+    }
     int status = 0;
 
     for(size_t r=0; args[r]; r++){
@@ -99,5 +106,6 @@ void install_init(OperationManager* manager){
     help_add_parameter(op.help, "--ignore-dependency", "disable dependency check");
     help_add_parameter(op.help, "--reinstall", "reinstall if already installed");
     help_add_parameter(op.help, "--no-emerge", "use binary package");
+    help_add_parameter(op.help, "--sync-single", "sync quarantine after every package installation");
     operation_register(manager, op);
 }
