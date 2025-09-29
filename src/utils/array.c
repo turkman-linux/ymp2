@@ -14,7 +14,7 @@ visible array *array_new() {
         printf("memory allocation failed");
         return NULL;
     }
-    arr->data = (char**)calloc(1024, sizeof(char*));
+    arr->data = (char**)malloc(1024* sizeof(char*));
     if(!arr->data){
         printf("memory allocation failed");
         free(arr);
@@ -233,7 +233,7 @@ visible char **array_get(array *arr, size_t* len) {
     size_t ret_index = 0; // Index for ret array
     while (start < arr->size) {
         if (arr->data[start] != NULL) {
-            ret[ret_index] = strdup(arr->data[start]);
+            ret[ret_index] = arr->data[start];
             debug("item: %s index: %ld len: %ld\n", ret[ret_index], ret_index, arr->size);
             if (!ret[ret_index]) {
                 // Handle strdup failure
