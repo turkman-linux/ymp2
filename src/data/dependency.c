@@ -40,7 +40,16 @@ static char** get_group_packages (const char* name) {
             } else {
                 for(size_t g=0; repos[i]->packages[j]->groups[g];g++){
                     const char* grp = repos[i]->packages[j]->groups[g];
-                    if(strlen(grp) == strlen(name)-1 && strcmp(grp, name+1) == 0){
+                    size_t l1 = strlen(name)-1;
+                    size_t l2 = strlen(grp);
+                    if(l2 < l1){
+                        // len(grp) < len(name)
+                        continue;
+                    } else if(l1 == l2 && strncmp(grp, name+1, l1) == 0){
+                        // len(grp) == len(name)
+                        array_add(res, repos[i]->packages[j]->name);
+                    } else if(strncmp(grp, name+1, l2) == 0 && grp[l1] == '.'){
+                        // len(grp) > len(name) and grp[len(name)] == '.'
                         array_add(res, repos[i]->packages[j]->name);
                     }
                 }
