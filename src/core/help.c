@@ -7,7 +7,7 @@
 #include <utils/string.h>
 
 // Function to create a new Help structure
-Help* help_new() {
+visible Help* help_new() {
     // Allocate memory for the Help structure
     Help *h = malloc(sizeof(Help));
     if (h == NULL) {
@@ -33,7 +33,7 @@ Help* help_new() {
 }
 
 // Function to add a string to the Help structure
-void help_add_string(Help *h, const char* string) {
+visible void help_add_string(Help *h, const char* string) {
     // Check if the current count has reached the maximum capacity
     if (h->cur >= h->max) {
         // Increase the maximum capacity by 32
@@ -60,7 +60,7 @@ void help_add_string(Help *h, const char* string) {
 }
 
 // Function to add a parameter with its description to the Help structure
-void help_add_parameter(Help *h, const char* name, const char* description) {
+visible void help_add_parameter(Help *h, const char* name, const char* description) {
     // Log the name and description for debugging purposes
     debug("name: %s, desc: %s\n", name, description);
 

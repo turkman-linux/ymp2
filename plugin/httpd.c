@@ -225,7 +225,9 @@ visible void plugin_init(Ymp* ymp){
     op.description = "simple http server";
     op.call = (callback)httpd;
     op.alias = NULL;
-    op.help = NULL;
+    op.help = help_new();
+    help_add_parameter(op.help, "--source", "serve directory. (default /)");
+    help_add_parameter(op.help, "--port", "server tcp port (default 8000)");
     op.min_args = 0;
     operation_register(y->manager, op);
 }
