@@ -95,11 +95,14 @@ operation_main_on_call:
             debug("Running:%s\n", name);
             priv->running = true;
             mode_t u = umask(0022);
+            set_value("OPERATION", manager->operations[i].name);
             status = manager->operations[i].call(args);
+            set_value("OPERATION", "");
             (void)umask(u);
             priv->running = false;
             if(status > 0){
 operation_main_on_error:
+                warning("Operation failed: %s Exited with : %d\n", manager->operations[i].name, status / 256);
                 if (manager->on_error.call){
                     mode_t ue = umask(0022);
                     manager->on_error.call(NULL);
