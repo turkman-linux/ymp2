@@ -85,7 +85,12 @@ static void list_directory(int client_fd, const char* dir_path, const char* serv
             em = "&#x1F4C4;";
         }
         free(file_path);
-        char* msg = build_string("<br>%s<a href=\"%s/%s\">%s</a></li>", em, dir_path+strlen(serve), entry->d_name, entry->d_name);
+        char* msg;
+        if(strlen(dir_path) == strlen(serve)){
+            msg = build_string("<br>%s<a href=\"/%s\">%s</a></li>", em, entry->d_name, entry->d_name);
+        } else {
+            msg = build_string("<br>%s<a href=\"/%s/%s\">%s</a></li>", em, dir_path+strlen(serve), entry->d_name, entry->d_name);
+        }
         if(swrite(client_fd, msg) < 0){
             return;
         }
