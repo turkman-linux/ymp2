@@ -79,6 +79,9 @@ static void list_directory(int client_fd, const char* dir_path, const char* serv
     // Read directory entries
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
+        if(strcmp(entry->d_name,".") == 0 || strcmp(entry->d_name,"..") == 0){
+            continue;
+        }
         const char* em = "&#x1F4C1;";
         char* file_path = build_string("%s/%s", dir_path, entry->d_name);
         if(isfile(file_path)){
