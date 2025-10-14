@@ -164,8 +164,7 @@ static void* handle_client(void* arg){
 
 write_response:
 
-    int rc = swrite(client_fd, res);
-    if(rc < 0){
+    if(swrite(client_fd, res) < 0){
         goto free_handle_client;
     }
 
