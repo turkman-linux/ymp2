@@ -169,7 +169,7 @@ static int repo_index(const char* path){
     fprintf(f, "  name: %s\n", name);
     fprintf(f, "  date: %ld\n", get_epoch());
     for(size_t i=0; i<cur; i++){
-        fprintf(f, out[i].metadata);
+        fprintf(f, "%s", out[i].metadata);
         fprintf(f, "    md5: %s\n", out[i].md5);
         fprintf(f, "    sha256: %s\n", out[i].sha256);
         fprintf(f, "    size: %ld\n", out[i].size);
