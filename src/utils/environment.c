@@ -8,10 +8,13 @@ extern char **environ;
 static char **environ_save;
 visible void clear_env(){
     char *path = strdup(getenv("PATH"));
-    char *env[1];
-    env[0] = NULL;
-    environ = env;
+    int len = 0;
+    while(environ[len]){
+        len++;
+        environ[len] = NULL;
+    }
     setenv("PATH", path, 1);
+    free(path);
 }
 
 visible void save_env(){
@@ -30,5 +33,6 @@ visible void save_env(){
 }
 
 visible void restore_env(){
+    clear_env();
     environ = environ_save;
 }

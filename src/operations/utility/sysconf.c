@@ -34,6 +34,7 @@ static int sysconf_main(char** args){
         for(size_t i=0; sc[i]; i++){
             strcpy(trigger, "/etc/sysconf.d/");
             strcat(trigger, sc[i]);
+            debug("%s\n", trigger);
             char* args[] = {"/bin/sh", trigger, NULL};
             rc = run_args(args);
             if(rc != 0){

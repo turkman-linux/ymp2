@@ -60,12 +60,13 @@ visible char* which(char* cmd){
 }
 
 
+extern char** environ;
 visible int run_args(char *args[]) {
     pid_t pid = fork();
     int status = 0;
     if (pid == 0) {
-        execv(which(args[0]), args);
-        perror("execv failed");
+        execv(args[0], args);
+        perror("exec failed");
         exit(EXIT_FAILURE);
     } else {
         waitpid(pid, &status, 0);
