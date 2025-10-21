@@ -169,7 +169,6 @@ static void resolve_reverse_dependency_fn(char* name) {
 // Function to initialize the resolution process
 visible Repository** resolve_begin() {
 
-
     // Build the path to the repository index
     char* repodir = build_string("%s/%s/index", get_value("DESTDIR"), STORAGE);
     char** dirs = listdir(repodir); // List the directories in the repository
@@ -185,7 +184,12 @@ visible Repository** resolve_begin() {
         j++;
         i++;
     }
-
+    if(j == 0){
+        warning("%s\n", "Repository list is empty!");
+        free(dirs);
+        free(repodir);
+        return NULL;
+    }
     // Allocate memory for the repository pointers
     repos = calloc(j, sizeof(Repository*));
     i = 0;
@@ -212,6 +216,9 @@ visible Repository** resolve_begin() {
 
 // Function to clean up resources after dependency resolution
 visible void resolve_end(Repository** repos) {
+    if(repos == NULL){
+        return;
+    }
     // Unreference and free each repository
     for (size_t i = 0; repos[i]; i++) {
         repository_unref(repos[i]);

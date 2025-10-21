@@ -59,6 +59,9 @@ static int install_main(char** args){
     for(size_t r=0; args[r]; r++){
         // Resolve dependencies
         Package** res = resolve_dependency(args[0]);
+        if(res == NULL){
+            continue;
+        }
         // Define jobs
         for(size_t i=0; res[i];i++){
             if(package_is_installed(res[i])){
