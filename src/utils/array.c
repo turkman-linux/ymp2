@@ -253,7 +253,7 @@ visible char **array_get(array *arr, size_t* len) {
     if (len) {
         *len = ret_index;
     }
-    
+    ret[*len]=NULL;
     pthread_mutex_unlock(&arr->lock);
     return ret; // Caller is responsible for freeing this memory
 }
