@@ -38,8 +38,8 @@ Ymp* global;
 static YmpPrivate* queue_init(){
     YmpPrivate *queue = (YmpPrivate*) malloc(sizeof(YmpPrivate));
     queue->length = 0;
-    queue->capacity = 0;
-    queue->item = malloc(sizeof(OperationJob));
+    queue->capacity = 32;
+    queue->item = malloc(sizeof(OperationJob)*32);
     return queue;
 }
 static void sigsegv_event(int signal){
@@ -118,14 +118,13 @@ visible void ymp_unref(Ymp* ymp){
 visible void ymp_add(Ymp* ymp, const char* name, void* args) {
     YmpPrivate *queue = (YmpPrivate*)ymp->priv_data;
     if(queue->length >= queue->capacity){
-        size_t new_capacity = queue->capacity + 32;
-        queue->item = realloc(queue->item, sizeof(OperationJob) * new_capacity);
+        queue->capacity += 32;
+        queue->item = realloc(queue->item, sizeof(OperationJob) * queue->capacity);
         if (queue->item == NULL) {
             // Handle memory allocation failure
             fprintf(stderr, "Memory allocation failed\n");
             return;
         }
-        queue->capacity = new_capacity;
     }
     queue->item[queue->length].name = name;
     queue->item[queue->length].args = args;

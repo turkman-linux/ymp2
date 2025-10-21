@@ -115,6 +115,7 @@ static void find_operation(array* array, const char* path){
     int i=0;
     while(inodes[i]){
         if(iseq(inodes[i], "..") || iseq(inodes[i], ".")){
+            free(inodes[i]);
             i++;
             continue;
         }
@@ -125,6 +126,7 @@ static void find_operation(array* array, const char* path){
             array_add(array, inode);
         }
         free(inode);
+        free(inodes[i]);
         i++;
     }
     free(inodes);

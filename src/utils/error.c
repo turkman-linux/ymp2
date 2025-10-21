@@ -22,11 +22,10 @@ visible void error_fn(array* error, int status){
         free(errs[i]);
     }
     free(errs);
+    array_clear(error);
     if(i>0){
-        array_unref(error);
         exit(status);
     }
-    array_clear(error);
 }
 visible void error(int status){
     error_fn(global->errors, status);

@@ -223,7 +223,7 @@ visible char **array_get(array *arr, size_t* len) {
     
     
     // Allocate memory for the return array
-    char** ret = malloc((arr->size + 1)*sizeof(char*));
+    char** ret = malloc((arr->size - arr->removed +1)*sizeof(char*));
     if (!ret) {
         pthread_mutex_unlock(&arr->lock);
         return NULL; // Handle memory allocation failure
@@ -297,8 +297,10 @@ visible void array_unref(array *arr) {
     }
 
     // Free each string in the array
-    for (size_t i = 0; i < arr->size; i++) {
-        free(arr->data[i]); // Free each string
+    for (size_t i = 0; i < arr->capacity; i++) {
+        if(arr->data[i]){
+            free(arr->data[i]); // Free each string
+        }
     }
 
     // Free the array of strings itself
@@ -315,6 +317,16 @@ visible void array_clear(array* arr){
     if (arr == NULL) {
         return; // Nothing to free
     }
-    array_unref(arr);
-    arr = array_new();
+    // Free each string in the array
+    for (size_t i = 0; i < arr->capacity; i++) {
+        if(arr->data[i]){
+            free(arr->data[i]); // Free each string
+        }
+    }
+    free(arr->data);
+    arr->data = (char**)malloc(1024* sizeof(char*));
+    arr->size = 0;
+    arr->capacity = 1024;
+    arr->removed = 0;
 }
+
