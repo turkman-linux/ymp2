@@ -107,7 +107,7 @@ visible void array_remove(array* arr, const char* item){
     size_t start = 0;
     while(start < arr->capacity){
         if(arr->data[start] != NULL && strcmp(arr->data[start],item)==0){
-            arr->data[start] = NULL;
+            free(arr->data[start]);
             arr->size -= 1;
             arr->removed +=1;
         }
@@ -297,7 +297,7 @@ visible void array_unref(array *arr) {
     }
 
     // Free each string in the array
-    for (size_t i = 0; i < arr->capacity; i++) {
+    for (size_t i = 0; i < arr->size; i++) {
         if(arr->data[i]){
             free(arr->data[i]); // Free each string
         }
