@@ -22,7 +22,8 @@ lib_l_args = []
 deps = [
     dependency('libarchive', required:true),
     dependency('libcurl', required:true),
-    dependency('openssl', required:true)
+    dependency('openssl', required:true),
+    dependency('ncurses', required:true)
 ]
 
 start = [meson.current_source_dir()+'/src/start/'+architecture+'.s']

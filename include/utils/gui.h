@@ -1,0 +1,1 @@
+bool yes_no_dialog(const char* title, const char *message);
