@@ -119,7 +119,7 @@ operation_main_on_call:
             priv->running = false;
             if(status > 0){
 operation_main_on_error:
-                warning("Operation failed: %s Exited with : %d\n", manager->operations[i].name, status / 256);
+                warning("Operation failed: %s Exited with : %d\n", manager->operations[i].name, status);
                 if (manager->on_error.call){
                     mode_t ue = umask(0022);
                     manager->on_error.call(NULL);

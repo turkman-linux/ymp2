@@ -48,6 +48,9 @@ static int install_cb(Package*p, int num){
 static int install_main(char** args){
     // Begin resolver and init job manager
     Repository **repos = resolve_begin();
+    if(repos == NULL){
+        return 2;
+    }
     jobs* download_jobs = jobs_new();
     jobs* install_jobs = jobs_new();
     // single thread install if sync single or source package installation

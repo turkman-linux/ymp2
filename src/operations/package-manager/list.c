@@ -17,6 +17,9 @@
 static void list_available(){
     size_t i=0;
     Repository **repos = resolve_begin();
+    if(repos == NULL){
+        return;
+    }
     while(repos[i]){
         for(size_t j=0; j< repos[i]->package_count;j++){
             const char* name = repos[i]->packages[j]->name;
