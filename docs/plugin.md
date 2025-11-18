@@ -86,6 +86,8 @@ ymp hello
 Here's a complete example of a simple YMP plugin:
 
 ```c
+#include <stdio.h>
+
 #include <core/ymp.h>
 #include <core/operations.h>
 
