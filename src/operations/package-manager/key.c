@@ -60,7 +60,11 @@ void key_init(OperationManager *manager){
     op.alias = "k";
     op.description = "Ymp key manager";
     op.min_args = 0;
-    op.help = NULL;
+     op.help = help_new();
+    help_add_parameter(op.help, "--add", "Add a key into ymp keyring db");
+    help_add_parameter(op.help, "--remove", "Add a key from ymp keyring db");
+    help_add_parameter(op.help, "--name", "Name for new key");
+
     op.call = (callback)key_main;
     operation_register(manager, op);
 }
