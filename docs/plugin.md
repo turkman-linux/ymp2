@@ -44,7 +44,7 @@ Here’s an example of how to define a simple "hello" operation:
 #include <core/ymp.h>
 #include <core/operations.h>
 
-static int hello_fn(Ymp* ymp, const Argument* args, int arg_count) {
+static int hello_fn(char** args) {
     // Implementation of the hello function
 }
 
@@ -78,7 +78,7 @@ install libymp_hello.so $(ymp get plugindir)
 
 3. use plugin
 ```bash
-ymp hello 
+ymp hello test123 args123
 ```
 
 ### Complete Example
@@ -96,6 +96,10 @@ static VariableManager* vars;
 static int hello_fn(char** args) {
     printf("Hello, World!\n");
     printf("%s\n", variable_get_value(vars, "message"));
+    for(size_t i=0; args[i]; i++){
+        printf("%s ", args[i]);
+    }
+    printf("\n");
     return 0;
 }
 
