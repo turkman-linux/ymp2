@@ -14,6 +14,10 @@ static void dump_info(Package *pi){
     } else {
         printf("package:\n");
     }
+    const char* desc = yaml_get_value(pi->metadata, "description");
+    if(desc == NULL){
+        return;
+    }
     printf(
         "name: %s\n"
         "version: %s\n"
@@ -22,7 +26,7 @@ static void dump_info(Package *pi){
         pi->name,
         pi->version,
         pi->release,
-        yaml_get_value(pi->metadata, "description")
+        desc
     );
     if(package_is_installed(pi)){
         printf("installed: true\n");

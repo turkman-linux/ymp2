@@ -42,13 +42,13 @@ static int quarantine_validate_metadata(const char* name){
     }
     // check package is unsafe
     char *unsafe = yaml_get_value(data, "unsafe");
-    if(strcmp(unsafe, "true") == 0){
+    if(unsafe && strcmp(unsafe, "true") == 0){
         if(strcmp(get_value("allow-unsafe"), "true") != 0){
             status = 1;
         }
+        free(unsafe);
     }
     // cleanup memory
-    free(unsafe);
     free(area_data);
     free(data);
     free(metadata_path);
@@ -95,8 +95,8 @@ static int quarantine_validate_files(const char* name) {
         }
 
         // Build the actual file path in quarantine root filesystem
-        strcpy(actual_file, rootfs_path);
-        strcat(actual_file, line + 41);
+        strncpy(actual_file, rootfs_path, strlen(actual_file));
+        strncat(actual_file, line + 41, strlen(actual_file));
 
         debug("Validate file: %s\n", actual_file+strlen(rootfs_path));
         // Check if the actual file exists

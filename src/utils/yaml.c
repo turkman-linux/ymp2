@@ -89,7 +89,9 @@ visible char *yaml_get_value(const char *data, const char *name) {
         }
     }
     fclose(stream);
-    return in_value ? strip(value) : NULL;
+    char* ret = in_value ? strip(value) : NULL;
+    free(value);
+    return ret;
 }
 
 visible char **yaml_get_array(const char *data, const char *name, int *count) {

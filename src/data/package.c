@@ -105,8 +105,10 @@ visible bool package_load_from_metadata(Package* pkg, const char* metadata, bool
     pkg->name = yaml_get_value(pkg->metadata, "name");
     pkg->version = yaml_get_value(pkg->metadata, "version");
     pkg->release = 1;
-    char* rel = yaml_get_value(pkg->metadata, "release");
-    if(strlen(rel) > 1){
+    const char* rel = yaml_get_value(pkg->metadata, "release");
+    if(rel == NULL){
+        pkg->release = 0;
+    }else if(strlen(rel) > 1){
         pkg->release = atoi(rel);
     }
     int dep_count = 0;

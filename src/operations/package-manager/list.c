@@ -24,6 +24,9 @@ static void list_available(){
         for(size_t j=0; j< repos[i]->package_count;j++){
             const char* name = repos[i]->packages[j]->name;
             const char* desc = yaml_get_value(repos[i]->packages[j]->metadata, "description");
+            if(name == NULL || desc == NULL){
+                continue;
+            }
             char* meta = build_string("%s/%s/metadata/%s.yaml", get_value("DESTDIR"), STORAGE, name);
             if(isfile(meta)){
                 printf(colorized(GREEN, "%s ") "%s\n", name, desc);
